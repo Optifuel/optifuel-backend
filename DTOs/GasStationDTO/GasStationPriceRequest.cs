@@ -11,7 +11,7 @@ namespace ApiCos.DTOs.GasStationDTO
         [Index(2)]
         public float? prezzo { get; set; } = null;
         [Index(3)]
-        public bool? isSelf { get; set; } = null;
+        public bool isSelf { get; set; }
         [Index(4)]
         public string? dtComu { get; set; } = null;
     }

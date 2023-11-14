@@ -7,6 +7,7 @@ using ApiCos.Models.Entities;
 using ApiCos.DTOs.GasStationDTO;
 using ApiCos.Services.IRepositories;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace ApiCos.Services
 {
@@ -25,7 +26,7 @@ namespace ApiCos.Services
 
         public Task<string> UpdateGasStation()
         {
-            UpdateGasRegistryTable();
+            // UpdateGasRegistryTable();
             UpdateGasPriceTable();
 
             return Task.FromResult("ok");
@@ -104,6 +105,7 @@ namespace ApiCos.Services
 
                 }
             }
+            _context.SaveChanges();
         }
 
         private void UpdateGasPriceTable()
@@ -123,29 +125,54 @@ namespace ApiCos.Services
                 csv.Read();
                 while(csv.Read())
                 {
+                    bool newValue = true;
                     GasStationPrice table = new GasStationPrice();
                     var data = csv.GetRecord<GasStationPriceRequest>();
-
-                    table = _context.GasStationPrice.Where(x => x.Id.Equals(data.idImpianto) && x.FuelType.Equals(data.descCarburante) && x.IsSelf.Equals(data.isSelf)).FirstOrDefault();
-                    if(table != null)
-                        continue;
-
                     if(data == null)
                         continue;
 
-                    table = new GasStationPrice
+                    var gasStationRegistryId = data.idImpianto; 
+                    var gasStationRegistry =_context.GasStationRegistry.Find(gasStationRegistryId);
+                    if(gasStationRegistry == null)
                     {
-                        Id = data.idImpianto,
-                        FuelType = data.descCarburante,
-                        Price = (double)data.prezzo,
-                        LastUpdate = data.dtComu
-                    };
+                        Console.WriteLine("Non è presente");
+                        continue;
+                    }
 
-                    _context.GasStationPrice.Add(table);
+                    table = _context.GasStationPrice.Where(x => x.Id.Equals(data.idImpianto) && x.FuelType.Equals(data.descCarburante) && x.IsSelf.Equals(data.isSelf)).FirstOrDefault();
+                    if(table != null)
+                    {
+                        newValue = false;
 
+                        table.LastUpdate = data.dtComu;
+                        table.Price = (double)data.prezzo;
+                    }
+                    else
+                    {
+                        table = new GasStationPrice()
+                        {
+                            Id = data.idImpianto,
+                            FuelType = data.descCarburante,
+                            Price = (double)data.prezzo,
+                            LastUpdate = data.dtComu,
+                            IsSelf = data.isSelf,
+                            GasStationRegistry = gasStationRegistry
+
+                        };
+                    }
+                    
+
+
+                    Console.WriteLine(table.Id +" "+ table.FuelType + " " + table.IsSelf);
+
+                    if(newValue)
+                        _context.GasStationPrice.Add(table);
+                    else 
+                        _context.GasStationPrice.Update(table);
 
                 }
             }
+            _context.SaveChanges();
         }
     }
 }

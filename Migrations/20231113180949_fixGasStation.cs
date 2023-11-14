@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiCos.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class fixGasStation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -42,7 +42,7 @@ namespace ApiCos.Migrations
                     GasStationName = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
                     City = table.Column<string>(type: "text", nullable: true),
-                    Province = table.Column<char[]>(type: "character(1)[]", nullable: false),
+                    Province = table.Column<string>(type: "text", nullable: true),
                     Latitude = table.Column<double>(type: "double precision", nullable: true),
                     Longitude = table.Column<double>(type: "double precision", nullable: true)
                 },
@@ -114,7 +114,7 @@ namespace ApiCos.Migrations
                     IsSelf = table.Column<bool>(type: "boolean", nullable: false),
                     GasStationRegistryId = table.Column<int>(type: "integer", nullable: false),
                     Price = table.Column<double>(type: "double precision", nullable: false),
-                    LastUpdate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    LastUpdate = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

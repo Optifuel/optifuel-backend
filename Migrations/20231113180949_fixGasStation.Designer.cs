@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiCos.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20231024223746_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20231113180949_fixGasStation")]
+    partial class fixGasStation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -71,8 +71,9 @@ namespace ApiCos.Migrations
                     b.Property<int>("GasStationRegistryId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("LastUpdate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("LastUpdate")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<double>("Price")
                         .HasColumnType("double precision");
@@ -113,9 +114,8 @@ namespace ApiCos.Migrations
                     b.Property<double?>("Longitude")
                         .HasColumnType("double precision");
 
-                    b.Property<char[]>("Province")
-                        .IsRequired()
-                        .HasColumnType("character(1)[]");
+                    b.Property<string>("Province")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

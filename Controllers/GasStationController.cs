@@ -17,8 +17,8 @@ namespace ApiCos.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/GetUserByEmail")]
-        public async Task<ActionResult<string>> UpdateGasStation([FromQuery] string email)
+        [Route("api/[controller]/UpdateGasStation")]
+        public async Task<ActionResult<string>> UpdateGasStation()
         {
             ResponseType responseType = ResponseType.Success;
             string? gas = await _gasStation.UpdateGasStation();
