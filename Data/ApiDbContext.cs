@@ -20,6 +20,7 @@ namespace ApiCos.Data
             modelBuilder .Entity<GasStationPrice>().Property(e => e.FuelType).HasConversion<string>();
 
             modelBuilder.Entity<Company>().OwnsOne(e => e.Address);
+
             modelBuilder.Entity<User>().OwnsOne(e => e.DrivingLicense);
             modelBuilder.Entity<User>().OwnsOne(e => e.PasswordEncrypted);
 
@@ -31,9 +32,8 @@ namespace ApiCos.Data
             modelBuilder.Entity<Company>().HasIndex(u=> u.VatNumber).IsUnique();
             modelBuilder.Entity<Vehicle>().HasIndex(u => u.LicensePlate).IsUnique();
 
-            modelBuilder.Entity<Company>().HasMany(e => e.Vehicles).WithOne(e => e.Company).HasForeignKey(e => e.Id).IsRequired(true);
-            modelBuilder.Entity<Company>().HasMany(e => e.Users).WithOne(e => e.Company).HasForeignKey(e => e.Id).IsRequired(true);
-
+            modelBuilder.Entity<Company>().HasMany(e => e.Vehicles).WithOne(e => e.Company).HasForeignKey(e => e.CompanyId).IsRequired(true);
+            modelBuilder.Entity<Company>().HasMany(e => e.Users).WithOne(e => e.Company).HasForeignKey(e => e.CompanyId).IsRequired(true);
         }
     }
 }

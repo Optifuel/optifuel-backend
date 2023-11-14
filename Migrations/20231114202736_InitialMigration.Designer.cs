@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiCos.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20231113180949_fixGasStation")]
-    partial class fixGasStation
+    [Migration("20231114202736_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -125,6 +125,12 @@ namespace ApiCos.Migrations
             modelBuilder.Entity("ApiCos.Models.Entities.User", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("DateBirth")
@@ -144,6 +150,8 @@ namespace ApiCos.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.HasIndex("Email")
                         .IsUnique();
 
@@ -153,11 +161,17 @@ namespace ApiCos.Migrations
             modelBuilder.Entity("ApiCos.Models.Entities.Vehicle", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Brand")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("EngineDisplacement")
                         .HasColumnType("integer");
@@ -193,6 +207,8 @@ namespace ApiCos.Migrations
                         .HasColumnType("real");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("LicensePlate")
                         .IsUnique();
@@ -250,7 +266,7 @@ namespace ApiCos.Migrations
                 {
                     b.HasOne("ApiCos.Models.Entities.Company", "Company")
                         .WithMany("Users")
-                        .HasForeignKey("Id")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -311,7 +327,7 @@ namespace ApiCos.Migrations
                 {
                     b.HasOne("ApiCos.Models.Entities.Company", "Company")
                         .WithMany("Vehicles")
-                        .HasForeignKey("Id")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

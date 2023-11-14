@@ -8,6 +8,8 @@ using ApiCos.DTOs.GasStationDTO;
 using ApiCos.Services.IRepositories;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 namespace ApiCos.Services
 {
@@ -26,10 +28,11 @@ namespace ApiCos.Services
 
         public Task<string> UpdateGasStation()
         {
-            // UpdateGasRegistryTable();
+            UpdateGasRegistryTable();
+            Console.WriteLine("Gas Station Registry Update Success");
             UpdateGasPriceTable();
-
-            return Task.FromResult("ok");
+            Console.WriteLine("Gas Station Price Update Success");
+            return Task.FromResult("Completed");
 
         }
 
@@ -48,6 +51,8 @@ namespace ApiCos.Services
 
             var streamTask = Task.Run(() => response.Content.ReadAsStreamAsync());
             streamTask.Wait();
+
+            var tableList = _context.GasStationRegistry.ToList();
             using(var stream = streamTask.Result)
             using(var reader = new StreamReader(stream))
             using(var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";", BadDataFound = null }))
@@ -59,7 +64,7 @@ namespace ApiCos.Services
                     GasStationRegistry table = new GasStationRegistry();
                     var data = csv.GetRecord<GasStationRegistryRequest>();
 
-                    table = _context.GasStationRegistry.Find(data.idImpianto);
+                    table = tableList.Find(x => x.Id.Equals(data.idImpianto));
                     if(table != null)
                         continue;
 
@@ -115,6 +120,9 @@ namespace ApiCos.Services
             responseTask.Wait();
             var response = responseTask.Result;
 
+            var gasStationRegistryList = _context.GasStationRegistry.ToList();
+            var tableList = _context.GasStationPrice.ToList();
+
             var streamTask = Task.Run(() => response.Content.ReadAsStreamAsync());
             streamTask.Wait();
             using(var stream = streamTask.Result)
@@ -131,15 +139,14 @@ namespace ApiCos.Services
                     if(data == null)
                         continue;
 
-                    var gasStationRegistryId = data.idImpianto; 
-                    var gasStationRegistry =_context.GasStationRegistry.Find(gasStationRegistryId);
+                    var gasStationRegistryId = data.idImpianto;
+                    var gasStationRegistry = gasStationRegistryList.Find(x => x.Id.Equals(gasStationRegistryId));
                     if(gasStationRegistry == null)
                     {
-                        Console.WriteLine("Non è presente");
                         continue;
                     }
 
-                    table = _context.GasStationPrice.Where(x => x.Id.Equals(data.idImpianto) && x.FuelType.Equals(data.descCarburante) && x.IsSelf.Equals(data.isSelf)).FirstOrDefault();
+                    table = tableList.Where(x => x.Id.Equals(data.idImpianto) && x.FuelType.Equals(data.descCarburante) && x.IsSelf.Equals(data.isSelf)).FirstOrDefault();
                     if(table != null)
                     {
                         newValue = false;
@@ -157,19 +164,14 @@ namespace ApiCos.Services
                             LastUpdate = data.dtComu,
                             IsSelf = data.isSelf,
                             GasStationRegistry = gasStationRegistry
-
                         };
                     }
-                    
 
-
-                    Console.WriteLine(table.Id +" "+ table.FuelType + " " + table.IsSelf);
 
                     if(newValue)
                         _context.GasStationPrice.Add(table);
                     else 
                         _context.GasStationPrice.Update(table);
-
                 }
             }
             _context.SaveChanges();

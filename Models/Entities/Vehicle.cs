@@ -19,6 +19,8 @@ namespace ApiCos.Models.Entities
         public float MaxLoad { get; set; }
         public float UrbanConsumption { get; set; }
         public float ExtraUrbanConsumption { get; set; }
+        public int CompanyId { get; set; }
+
         public Company Company { get; set; } = null!;
     }
 

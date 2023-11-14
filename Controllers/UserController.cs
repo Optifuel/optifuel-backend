@@ -68,6 +68,26 @@ namespace ApiCOS.Controllers
 
         }
 
+        [HttpPost]
+        [Route("api/[controller]/EditUser/")]
+        public async Task<ActionResult<UserRequest>> editUser([FromBody] UserSending user)
+        {
+            try
+            {
+                if(ModelState.IsValid)
+                {
+                    await _unitOfWork.User.EditUser(_mapper.Map<User>(user));
+                    await _unitOfWork.CompleteAsync();
+
+                    return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, _mapper.Map<UserSending>(user)));
+                }
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Error"));
+            } catch(Exception e)
+            {
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+            }
+        }
+
     }
 
 

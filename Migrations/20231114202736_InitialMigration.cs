@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiCos.Migrations
 {
     /// <inheritdoc />
-    public partial class fixGasStation : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,10 +55,12 @@ namespace ApiCos.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Email = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Surname = table.Column<string>(type: "text", nullable: false),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
                     DateBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DrivingLicense_Type = table.Column<string>(type: "text", nullable: false),
                     DrivingLicense_DeadLine = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -70,8 +72,8 @@ namespace ApiCos.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Companies_Id",
-                        column: x => x.Id,
+                        name: "FK_Users_Companies_CompanyId",
+                        column: x => x.CompanyId,
                         principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -81,7 +83,8 @@ namespace ApiCos.Migrations
                 name: "Vehicles",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     LicensePlate = table.Column<string>(type: "text", nullable: false),
                     Brand = table.Column<string>(type: "text", nullable: false),
                     Model = table.Column<string>(type: "text", nullable: false),
@@ -92,14 +95,15 @@ namespace ApiCos.Migrations
                     Weight = table.Column<float>(type: "real", nullable: false),
                     MaxLoad = table.Column<float>(type: "real", nullable: false),
                     UrbanConsumption = table.Column<float>(type: "real", nullable: false),
-                    ExtraUrbanConsumption = table.Column<float>(type: "real", nullable: false)
+                    ExtraUrbanConsumption = table.Column<float>(type: "real", nullable: false),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Vehicles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Vehicles_Companies_Id",
-                        column: x => x.Id,
+                        name: "FK_Vehicles_Companies_CompanyId",
+                        column: x => x.CompanyId,
                         principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -145,10 +149,20 @@ namespace ApiCos.Migrations
                 column: "GasStationRegistryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_CompanyId",
+                table: "Users",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
                 table: "Users",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Vehicles_CompanyId",
+                table: "Vehicles",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Vehicles_LicensePlate",
