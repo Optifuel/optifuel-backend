@@ -25,6 +25,10 @@
                 response.Code = "1";
                 response.Message = "No record available";
                 break;
+                case ResponseType.Failure:
+                    response.Code = "2";
+                    response.Message = "Failure";
+                break;
             }
 
             return response;

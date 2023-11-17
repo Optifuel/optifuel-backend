@@ -5,7 +5,7 @@ using ApiCos.DTOs.UserDTO;
 using ApiCos.Controllers;
 using AutoMapper;
 using ApiCos.Response;
-using ApiCos.DTOs.Common;
+using ApiCos.LoginAuthorization;
 
 namespace ApiCOS.Controllers
 {
@@ -40,10 +40,25 @@ namespace ApiCOS.Controllers
             {
                 User user = await _unitOfWork.User.GetByEmailAndPassword(email, Password);
                 UserSending userSending = _mapper.Map<UserSending>(user);
+                userSending.token = LoginAuthorization.addAuthorization(userSending.Email);
                 return Ok(ResponseHandler.GetApiResponse(responseType, userSending));
             } catch(Exception e)
             {
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+            }
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/checkAuthorization")]
+        public async Task<ActionResult<string>> checkAuthorization([FromQuery]string email, [FromQuery] string token)
+        {
+            if(LoginAuthorization.checkAuthorization(email, token))
+            {
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Authorization"));
+            }
+            else
+            {
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Failure"));
             }
         }
 
@@ -85,6 +100,27 @@ namespace ApiCOS.Controllers
             } catch(Exception e)
             {
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+            }
+        }
+
+        [HttpPut]
+        [Route("api/[controller]/VerificationUser")]
+        public async Task<ActionResult<string>> verificationUser([FromQuery] string email, [FromQuery] int token)
+        {
+            try
+            {
+                if(ModelState.IsValid)
+                {
+                    bool result = await _unitOfWork.User.ValidationUser(email, token);
+                    if(result)
+                        return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Success"));
+                    else
+                        return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Failure"));
+                }
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Failure"));
+            } catch(Exception e)
+            {
+                return BadRequest(e.Message);
             }
         }
 

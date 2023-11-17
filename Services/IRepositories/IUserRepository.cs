@@ -9,5 +9,6 @@ namespace ApiCos.Services.IRepositories
         Task<User?> GetByEmailAndPassword(string email, string password);
 
         Task<User?> EditUser(User user);
+        Task<bool> ValidationUser(string email, int token);
     }
 }

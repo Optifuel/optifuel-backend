@@ -213,6 +213,22 @@ namespace ApiCos.Migrations
                     b.ToTable("Vehicles");
                 });
 
+            modelBuilder.Entity("ApiCos.Models.Entities.Verification", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DeadLine")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Token")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("Verification");
+                });
+
             modelBuilder.Entity("ApiCos.Models.Entities.Company", b =>
                 {
                     b.OwnsOne("ApiCos.Models.Common.Address", "Address", b1 =>
@@ -331,6 +347,17 @@ namespace ApiCos.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("ApiCos.Models.Entities.Verification", b =>
+                {
+                    b.HasOne("ApiCos.Models.Entities.User", "User")
+                        .WithOne("Verification")
+                        .HasForeignKey("ApiCos.Models.Entities.Verification", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ApiCos.Models.Entities.Company", b =>
                 {
                     b.Navigation("Users");
@@ -341,6 +368,11 @@ namespace ApiCos.Migrations
             modelBuilder.Entity("ApiCos.Models.Entities.GasStationRegistry", b =>
                 {
                     b.Navigation("GasStationPrices");
+                });
+
+            modelBuilder.Entity("ApiCos.Models.Entities.User", b =>
+                {
+                    b.Navigation("Verification");
                 });
 #pragma warning restore 612, 618
         }

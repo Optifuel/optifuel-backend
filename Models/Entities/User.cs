@@ -16,6 +16,7 @@ namespace ApiCos.Models.Entities
         public DateTime DateBirth { get; set; }
         public DrivingLicense DrivingLicense { get; set; } = null!;
         public Password PasswordEncrypted { get; set; } = new Password();
+        public Verification? Verification { get; set; } = new Verification();
        
     }
 }

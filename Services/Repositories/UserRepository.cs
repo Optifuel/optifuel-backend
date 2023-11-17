@@ -3,11 +3,10 @@ using ApiCos.Models.Common;
 using ApiCos.Models.Entities;
 using ApiCos.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using MimeKit;
-using MailKit;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Cryptography;
-using MailKit.Net.Smtp;
-using Org.BouncyCastle.Asn1;
+
 
 namespace ApiCos.Services.Repositories
 {
@@ -31,7 +30,18 @@ namespace ApiCos.Services.Repositories
                 Validated = false
             };
             user.Company = company;
+            int token = generateRandomNumber();
+
+            user.Verification = new Verification()
+            {
+                Token = token,
+                DeadLine = DateTime.UtcNow.AddDays(1),
+                UserId= user.Id,
+                User = user,
+            };
             await dbSet.AddAsync(user);
+            
+            sendVerificationEmail(user.Email,token );
             return user;
         }
         
@@ -43,7 +53,6 @@ namespace ApiCos.Services.Repositories
 
         public async Task<User?> GetByEmailAndPassword(string email, string password)
         {
-            Console.WriteLine("email: " + email + " password: " + password);    
             if(string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 throw new Exception("null or empty email or password");
             User user = await dbSet.Where(u => u.Email == email).FirstOrDefaultAsync();
@@ -51,7 +60,32 @@ namespace ApiCos.Services.Repositories
                 throw new Exception("user not found");
             if(!ValidatePassword(password, user.PasswordEncrypted.PasswordHash, user.PasswordEncrypted.PasswordSalt))
                 throw new Exception("password is not correct");
+            if(user.PasswordEncrypted.Validated== false)
+                throw new Exception("Account is not validated");
+
             return user;
+        }
+
+        public async Task<bool> ValidationUser(string email, int token)
+        {
+            User user = await dbSet.Where(u => u.Email == email).Include(u => u.Verification).FirstOrDefaultAsync();
+            if( user == null )
+                throw new Exception("user not found");
+            if(user.PasswordEncrypted.Validated == true)
+                throw new Exception("user is already validated");
+
+            Console.WriteLine($"{user.Verification.Token} TOKEN");
+            if(user.Verification.Token == token)
+            {
+                user.PasswordEncrypted.Validated = true;
+                user.Verification = null;
+                _context.SaveChanges();
+                return true;
+            }else
+            {
+                return false;
+            }
+
         }
 
         private bool ValidatePassword(string password, byte[] passwordHash, byte[] passwordSalt)
@@ -88,30 +122,34 @@ namespace ApiCos.Services.Repositories
 
         }
 
-        private bool sendEmail(string mail)
+        private void sendVerificationEmail(string mail, int token)
         {
-            try
+            string fromMail = "iscosproject@gmail.com";
+            string fromPassword = "stmgapzhamxgbbtq";
+
+            MailMessage message = new MailMessage();
+            message.From = new MailAddress(fromMail);
+            message.To.Add(new MailAddress(mail));
+            message.Body = "<html><body> " +
+                "Grazie per esserti registrato al nostro sito. \n" +
+                " Per utilizzare tutte le nostre funzionalità inserisci il seguente codice di verifica nell'apposita sezione del sito: \n " + token +
+                "</body></html>";
+            message.IsBodyHtml = true;
+
+            var smtpClient = new SmtpClient("smtp.gmail.com")
             {
-                var email = new MimeMessage();
-                email.From.Add(MailboxAddress.Parse(mail));
-                Console.WriteLine("katlynn.batz23@ethereal.email");
-                email.To.Add(MailboxAddress.Parse("katlynn.batz23@ethereal.email"));
-                email.Subject = "Test Email Subject";
-                email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = "Example Plain Text Message Body" };
+                Port = 587,
+                Credentials = new NetworkCredential(fromMail, fromPassword),
+                EnableSsl = true,
+            };
 
-                using var smtp = new SmtpClient();
-                smtp.Connect("smtp.ethereal.email", 587, MailKit.Security.SecureSocketOptions.StartTls);
-                smtp.Authenticate("katlynn.batz23@ethereal.email", "GUFcUpPNuJ3fxnQ6Ch");
-                smtp.Send(email);
-                smtp.Disconnect(true);
-            } catch(Exception e)
-            {
-                return false;
-            }
+            smtpClient.Send(message);
+        }
 
-
-            return true;
-
+        private int generateRandomNumber()
+        {
+            Random rand = new Random();
+            return rand.Next(100000, 999999);
         }
     }
 
