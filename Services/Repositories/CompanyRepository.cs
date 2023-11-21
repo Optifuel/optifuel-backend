@@ -1,4 +1,5 @@
 ﻿using ApiCos.Data;
+using ApiCos.ExceptionApi.Company;
 using ApiCos.Models.Entities;
 using ApiCos.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -14,55 +15,54 @@ namespace ApiCos.Services.Repositories
 
         public async Task<Company?> Add(Company company)
         {
+            if(!await CheckVatValidity(company.VatNumber))
+                throw new VatNumberNotValid();
 
+            await dbSet.AddAsync(company);
+            return company;
 
-            if (!await CheckVatValidity(company.VatNumber))
-                throw new Exception("vat number not valid");
-
-            try
-            {
-                await dbSet.AddAsync(company);
-                return company;
-            } catch(Exception ex)
-            {
-                _logger.LogError($"Error in {nameof(Add)}: " + ex.Message);
-                return null;
-            }
         }   
 
         public async Task<Company?> GetCompanyByBusinessName(string businessName)
         {
-            return await dbSet.Where(c => c.BusinessName == businessName).FirstOrDefaultAsync();
+            if(string.IsNullOrEmpty(businessName))
+                throw new BussinessnameEmptyException();
+
+            Company? company = await dbSet.Where(c => c.BusinessName == businessName).Include(c => c.Users).Include(c => c.Vehicles).FirstOrDefaultAsync();
+
+            if(company == null)
+                throw new CompanyNotFoundException();
+
+            return company;
         }
 
         public async Task<Company?> GetCompanyByVatNumber(string vatNumber)
         {
-            return await dbSet.Where(c => c.VatNumber == vatNumber).FirstOrDefaultAsync();
+            if(string.IsNullOrEmpty(vatNumber))
+                throw new VatNumberEmptyException();
+
+            Company? company = await dbSet.Where(c => c.VatNumber == vatNumber).Include(c => c.Users).Include(c => c.Vehicles).FirstOrDefaultAsync();
+
+            if(company == null)
+                throw new CompanyNotFoundException();
+
+            return company;
         }
 
         public async Task<List<User>?> GetUsersByBusinessName(string businessName)
         {
-            Company? company = await _context.Company
-                                     .Include(c => c.Users)
-                                     .FirstOrDefaultAsync(c => c.BusinessName == businessName);
-            if(company == null)
-                throw new Exception("company not found");
-            Console.WriteLine(company.Users.Count);
+            Company? company = await GetCompanyByBusinessName(businessName);
+
             return company.Users;
         }
 
         public async Task<List<Vehicle>?> GetVehiclesByBusinessName(string businessName)
         {
-            Company? company = await _context.Company
-                                     .Include(c => c.Vehicles)
-                                     .FirstOrDefaultAsync(c => c.BusinessName == businessName);
-            if (company == null)
-                throw new Exception("company not found");
+            Company? company = await GetCompanyByBusinessName(businessName);
 
             return company.Vehicles;
         }
 
-        // Assicurati di avere "using System.Threading.Tasks;" all'inizio del tuo file C#
         private async Task<bool> CheckVatValidity(string vatNumber)
         {
             using(HttpClient client = new HttpClient())

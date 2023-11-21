@@ -1,12 +1,12 @@
 ﻿using ApiCos.DTOs.CompanyDTO;
 using ApiCos.DTOs.UserDTO;
 using ApiCos.DTOs.VehicleDTO;
+using ApiCos.ExceptionApi;
 using ApiCos.Models.Entities;
 using ApiCos.Response;
 using ApiCos.Services.IRepositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography.X509Certificates;
 
 namespace ApiCos.Controllers
 {
@@ -22,15 +22,14 @@ namespace ApiCos.Controllers
         {
             try
             {
-                if(ModelState.IsValid)
-                {
-                    Company companyTable = _mapper.Map<Company>(company);
-                    await _unitOfWork.Company.Add(companyTable);
-                    await _unitOfWork.CompleteAsync();
-                    return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, company));
-                }
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Error"));
-            } catch(Exception e)
+                Company companyTable = _mapper.Map<Company>(company);
+                await _unitOfWork.Company.Add(companyTable);
+                await _unitOfWork.CompleteAsync();
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, company)); 
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch (Exception e)
             {
                 return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
@@ -47,6 +46,9 @@ namespace ApiCos.Controllers
                 List<UserSending>? users = _mapper.Map<List<User>, List<UserSending>>(usersDb);
 
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, users));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             } catch(Exception e)
             {
                 return BadRequest(ResponseHandler.GetExceptionResponse(e));
@@ -63,6 +65,9 @@ namespace ApiCos.Controllers
                 var vehicles = _mapper.Map<List<Vehicle>, List<VehicleRequest>>(vehiclesDb);
 
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, vehicles));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             } catch(Exception e)
             {
                 return BadRequest(ResponseHandler.GetExceptionResponse(e));
@@ -78,6 +83,9 @@ namespace ApiCos.Controllers
                 var company = await _unitOfWork.Company.GetCompanyByVatNumber(vatNumber);
                 var companySending = _mapper.Map<CompanySending>(company);
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success,companySending ));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             } catch(Exception e)
             {
                 return BadRequest(ResponseHandler.GetExceptionResponse(e));

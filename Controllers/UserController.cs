@@ -31,6 +31,9 @@ namespace ApiCOS.Controllers
             } catch(BaseException e)
             {
                 return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
         }
 
@@ -61,6 +64,9 @@ namespace ApiCOS.Controllers
             } catch(BaseException e)
             {
                 return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
 
         }
@@ -78,6 +84,9 @@ namespace ApiCOS.Controllers
             } catch(BaseException e)
             {
                 return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
         }
 
@@ -92,6 +101,9 @@ namespace ApiCOS.Controllers
             } catch(BaseException e)
             {
                 return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
         }
 

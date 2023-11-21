@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
 using ApiCos.ExceptionApi.User;
+using ApiCos.ExceptionApi.Company;
 
 namespace ApiCos.Services.Repositories
 {
@@ -19,8 +20,9 @@ namespace ApiCos.Services.Repositories
         public async Task<User> Add(User user, string businessName , string password)
         {
             Company? company = await _context.Company.Where(c => c.BusinessName == businessName).FirstOrDefaultAsync();
+
             if(company == null)
-                throw new Exception("company not found");
+                throw new CompanyNotFoundException();
 
             CreatePasswordHash(password, out var passwordHash, out var passwordSalt);
             user.PasswordEncrypted = new Password
@@ -44,7 +46,6 @@ namespace ApiCos.Services.Repositories
             sendVerificationEmail(user.Email,token );
             return user;
         }
-        
 
         private async Task<User?> GetByEmail(string email)
         {

@@ -1,7 +1,9 @@
 ﻿using ApiCos.Data;
+using ApiCos.ExceptionApi.Company;
 using ApiCos.Models.Entities;
 using ApiCos.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
+using ApiCos.ExceptionApi.Vehicle;
 
 namespace ApiCos.Services.Repositories
 {
@@ -13,9 +15,11 @@ namespace ApiCos.Services.Repositories
 
         public async Task<Vehicle> Add(Vehicle vehicle, string companyName)
         {
-            vehicle.Company = _context.Company.Where(c => c.BusinessName == companyName).FirstOrDefault();
-            if (vehicle.Company == null)
-                throw new Exception("company not found");
+            Company? company= _context.Company.Where(c => c.BusinessName == companyName).FirstOrDefault();
+            if(y == null)
+                throw new CompanyNotFoundException();
+
+            vehicle.Company = company;
             vehicle.CompanyId = vehicle.Company.Id;
             await Add(vehicle);
             return vehicle;
@@ -25,7 +29,8 @@ namespace ApiCos.Services.Repositories
         {
             var vehicleToEdit = await dbSet.Where(v => v.LicensePlate == vehicle.LicensePlate).Include(v => v.Company).FirstOrDefaultAsync();
             if (vehicleToEdit == null)
-                throw new Exception("vehicle not found");
+                throw new VehicleNotFoundException();
+
             var companyDb = await _context.Company.Where(c => c.BusinessName == company).FirstOrDefaultAsync();
 
             vehicleToEdit.Model = vehicle.Model;
@@ -47,18 +52,18 @@ namespace ApiCos.Services.Repositories
         public async Task<Vehicle?> GetByLicensePlate(string licensePlate)
         {
             if (string.IsNullOrWhiteSpace(licensePlate))
-                throw new Exception("null or empty license plate");
+                throw new LicensePlateEmptyException();
             var vehicle = await dbSet.Where(v => v.LicensePlate == licensePlate).Include(v => v.Company).FirstOrDefaultAsync();
             if(vehicle == null)
-                throw new Exception("vehicle not found");
+                throw new VehicleNotFoundException();
             return vehicle;
         }
 
         public async Task<List<Vehicle?>?> SearchByBrand(string businessName, string brand)
         {
             var list = await dbSet.Where(v => v.Company.BusinessName == businessName && v.Brand == brand).Include(v => v.Company).ToListAsync();
-            if (list == null)
-                throw new Exception("vehicles not found");
+            if(list == null)
+                throw new VehicleNotFoundException();
             return list;
         }
 
@@ -66,7 +71,7 @@ namespace ApiCos.Services.Repositories
         {
             var list = await dbSet.Where(v => v.Company.BusinessName == businessNam && v.Model == model).Include(v => v.Company).ToListAsync();
             if (list == null)
-                throw new Exception("vehicles not found");
+                throw new VehicleNotFoundException();
             return list;
         }
     }

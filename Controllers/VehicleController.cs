@@ -1,5 +1,6 @@
 ﻿using ApiCos.DTOs.UserDTO;
 using ApiCos.DTOs.VehicleDTO;
+using ApiCos.ExceptionApi;
 using ApiCos.Models.Entities;
 using ApiCos.Response;
 using ApiCos.Services.IRepositories;
@@ -27,9 +28,12 @@ namespace ApiCos.Controllers
                 await _unitOfWork.CompleteAsync();
 
                 return Ok(ResponseHandler.GetApiResponse(responseType, data));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             } catch(Exception e)
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
 
         }
@@ -44,9 +48,12 @@ namespace ApiCos.Controllers
                 Vehicle? vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
                 VehicleRequest vehicleResponse = _mapper.Map<VehicleRequest>(vehicle);
                 return Ok(ResponseHandler.GetApiResponse(responseType, vehicleResponse));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             } catch(Exception e)
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
         }
 
@@ -60,9 +67,12 @@ namespace ApiCos.Controllers
                 List<Vehicle?>? vehicles = await _unitOfWork.Vehicle.SearchByBrand(businessName, brand);
                 List<VehicleRequest>? vehiclesResponse = _mapper.Map<List<Vehicle>,List<VehicleRequest>>(vehicles);
                 return Ok(ResponseHandler.GetApiResponse(responseType, vehiclesResponse));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             } catch(Exception e)
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
         }
 
@@ -76,9 +86,12 @@ namespace ApiCos.Controllers
                 List<Vehicle?>? vehicles = await _unitOfWork.Vehicle.SearchByModel(businessName, model);
                 List<VehicleRequest>? vehiclesResponse = _mapper.Map<List<Vehicle>, List<VehicleRequest>>(vehicles);
                 return Ok(ResponseHandler.GetApiResponse(responseType, vehiclesResponse));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             } catch(Exception e)
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
         }
 
@@ -94,9 +107,12 @@ namespace ApiCos.Controllers
                 await _unitOfWork.CompleteAsync();
 
                 return Ok(ResponseHandler.GetApiResponse(responseType, data));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             } catch(Exception e)
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
         }
     }
