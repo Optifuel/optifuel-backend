@@ -19,6 +19,7 @@ namespace ApiCos.Utils.AutoMapper
             CreateMap<User, UserSending>();
             CreateMap<UserSending, User>();
             CreateMap<UserEdit, User>();
+            CreateMap<UserEdit, UserSending>();
 
             CreateMap<CompanyRequest, Company>();
             CreateMap<Company, CompanySending>();
