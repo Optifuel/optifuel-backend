@@ -97,7 +97,7 @@ namespace ApiCOS.Controllers
             try
             {
                 await _unitOfWork.User.ValidationUser(email, token);
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Failure"));
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Success"));
             } catch(BaseException e)
             {
                 return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));

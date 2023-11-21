@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiCos.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20231121092510_DateOnly")]
+    [Migration("20231121105253_DateOnly")]
     partial class DateOnly
     {
         /// <inheritdoc />

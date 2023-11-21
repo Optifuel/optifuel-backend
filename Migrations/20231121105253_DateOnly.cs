@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiCos.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class DateOnly : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -61,9 +61,9 @@ namespace ApiCos.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Surname = table.Column<string>(type: "text", nullable: false),
                     CompanyId = table.Column<int>(type: "integer", nullable: false),
-                    DateBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DateBirth = table.Column<DateOnly>(type: "date", nullable: false),
                     DrivingLicense_Type = table.Column<string>(type: "text", nullable: false),
-                    DrivingLicense_DeadLine = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DrivingLicense_DeadLine = table.Column<DateOnly>(type: "date", nullable: false),
                     PasswordEncrypted_PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: false),
                     PasswordEncrypted_PasswordHash = table.Column<byte[]>(type: "bytea", nullable: false),
                     PasswordEncrypted_Validated = table.Column<bool>(type: "boolean", nullable: false)
