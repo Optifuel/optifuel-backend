@@ -5,7 +5,7 @@ namespace ApiCos.DTOs.UserDTO
 {
     public class UserSending: UserBase
     {
-        public DateTime DateBirth { get; set; }
+        public DateOnly DateBirth { get; set; }
         public DrivingLicense DrivingLicense { get; set; } = null!;
         public string token { get; set; } = null!;
 

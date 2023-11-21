@@ -16,7 +16,7 @@ namespace ApiCos.Services.Repositories
         public async Task<Vehicle> Add(Vehicle vehicle, string companyName)
         {
             Company? company= _context.Company.Where(c => c.BusinessName == companyName).FirstOrDefault();
-            if(y == null)
+            if(company == null)
                 throw new CompanyNotFoundException();
 
             vehicle.Company = company;

@@ -13,7 +13,7 @@ namespace ApiCos.Utils.Validators
             RuleFor(x => x.Surname).NotEmpty().MaximumLength(50);
             RuleFor(x => x.DateBirth).Must(x =>
             {
-                var today = DateTime.Today;
+                var today = DateOnly.FromDateTime(DateTime.Now);
                 var age = today.Year - x.Year;
 
                 if(x > today.AddYears(-age))

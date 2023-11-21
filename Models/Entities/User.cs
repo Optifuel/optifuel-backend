@@ -13,7 +13,7 @@ namespace ApiCos.Models.Entities
         public string Surname { get; set; } = null!;
         public int CompanyId { get; set; }
         public Company Company { get; set; } = null!;
-        public DateTime DateBirth { get; set; }
+        public DateOnly DateBirth { get; set; }
         public DrivingLicense DrivingLicense { get; set; } = null!;
         public Password PasswordEncrypted { get; set; } = new Password();
         public Verification? Verification { get; set; } = new Verification();

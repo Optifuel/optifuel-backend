@@ -3,7 +3,7 @@
     public class DrivingLicense
     {
         public string Type { get; set; }
-        public DateTime DeadLine { get; set; }
+        public DateOnly DeadLine { get; set; }
     }
 
 }
