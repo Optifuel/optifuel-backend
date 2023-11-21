@@ -8,6 +8,7 @@ namespace ApiCos.Services.Repositories
     {
         protected ApiDbContext _context;
         protected DbSet<T> dbSet;
+        private ApiDbContext context;
         protected readonly ILogger _logger;
 
         public GenericRepository(ApiDbContext context, ILogger logger)
@@ -15,7 +16,8 @@ namespace ApiCos.Services.Repositories
             _context = context;
             _logger = logger;
             this.dbSet = _context.Set<T>();
-        }   
+        }
+
 
         public virtual async Task<IEnumerable<T>> GetAll()
         {

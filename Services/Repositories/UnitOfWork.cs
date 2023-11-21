@@ -10,6 +10,7 @@ namespace ApiCos.Services.Repositories
 
         public IUserRepository User { get; private set; }
         public ICompanyRepository Company { get; private set; }
+        public IVehicleRepository Vehicle { get; private set; }
 
         public UnitOfWork(ApiDbContext context, ILogger<IUnitOfWork> logger)
         {
@@ -17,6 +18,7 @@ namespace ApiCos.Services.Repositories
             _logger = logger;
             User = new UserRepository(_context, _logger);
             Company = new CompanyRepository(_context, _logger);
+            Vehicle = new VehicleRepository(_context, _logger);
         }
 
         public async Task CompleteAsync()

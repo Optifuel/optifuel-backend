@@ -2,6 +2,7 @@
 using ApiCos.DTOs.CompanyDTO;
 using ApiCos.DTOs.GasStationDTO;
 using ApiCos.DTOs.UserDTO;
+using ApiCos.DTOs.VehicleDTO;
 using ApiCos.Models.Common;
 using ApiCos.Models.Entities;
 using AutoMapper;
@@ -20,6 +21,9 @@ namespace ApiCos.Utils.AutoMapper
 
             CreateMap<CompanyRequest, Company>();
             CreateMap<Company, CompanySending>();
+            
+            CreateMap<VehicleRequest, Vehicle>();
+            CreateMap<Vehicle, VehicleRequest>().ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src=> src.Company.BusinessName));
 
         }
     }

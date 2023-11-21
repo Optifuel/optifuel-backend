@@ -6,6 +6,7 @@ using ApiCos.Controllers;
 using AutoMapper;
 using ApiCos.Response;
 using ApiCos.LoginAuthorization;
+using ApiCos.ExceptionApi;
 
 namespace ApiCOS.Controllers
 {
@@ -18,33 +19,18 @@ namespace ApiCOS.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/GetUserByEmail")]
-        public async Task<ActionResult<UserSending>> GetUserByEmail([FromQuery] string email)
-        {
-
-            ResponseType responseType = ResponseType.Success;
-            User user = await _unitOfWork.User.GetByEmail(email);
-            UserSending userSending = _mapper.Map<UserSending>(user);
-            if(user == null)
-                responseType = ResponseType.NotFound;
-            return Ok(ResponseHandler.GetApiResponse(responseType, userSending));
-
-        }
-
-        [HttpGet]
         [Route("api/[controller]/GetUserByEmailAndPassword")]
         public async Task<ActionResult<UserSending>> GetUserByEmail([FromQuery] string email, [FromQuery] string Password)
         {
-            ResponseType responseType = ResponseType.Success;
             try
             {
-                User user = await _unitOfWork.User.GetByEmailAndPassword(email, Password);
+                User? user = await _unitOfWork.User.GetByEmailAndPassword(email, Password);
                 UserSending userSending = _mapper.Map<UserSending>(user);
                 userSending.token = LoginAuthorization.addAuthorization(userSending.Email);
-                return Ok(ResponseHandler.GetApiResponse(responseType, userSending));
-            } catch(Exception e)
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, userSending));
+            } catch(BaseException e)
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             }
         }
 
@@ -58,48 +44,40 @@ namespace ApiCOS.Controllers
             }
             else
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Failure"));
+                return BadRequest(ResponseHandler.GetApiResponse(ResponseType.Failure, "Failure"));
             }
         }
 
         [HttpPost]
-        [Route("api/[controller]/AddUser/")]
+        [Route("api/[controller]/AddUser")]
         public async Task<ActionResult<UserRequest>> AddUser([FromBody] UserRequest user)
         {
             try
             {
-                if(ModelState.IsValid)
-                {
-                    await _unitOfWork.User.Add(_mapper.Map<User>(user), user.BusinessName, user.Password);
-                    await _unitOfWork.CompleteAsync();
+                await _unitOfWork.User.Add(_mapper.Map<User>(user), user.BusinessName, user.Password);
+                await _unitOfWork.CompleteAsync();
 
-                    return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, user));
-                }
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Error"));
-            } catch(Exception e)
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, user));   
+            } catch(BaseException e)
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             }
 
         }
 
         [HttpPost]
-        [Route("api/[controller]/EditUser/")]
-        public async Task<ActionResult<UserRequest>> editUser([FromBody] UserSending user)
+        [Route("api/[controller]/EditUser")]
+        public async Task<ActionResult<UserRequest>> editUser([FromBody] UserEdit user)
         {
             try
             {
-                if(ModelState.IsValid)
-                {
-                    await _unitOfWork.User.EditUser(_mapper.Map<User>(user));
-                    await _unitOfWork.CompleteAsync();
+                await _unitOfWork.User.EditUser(_mapper.Map<User>(user));
+                await _unitOfWork.CompleteAsync();
 
-                    return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, _mapper.Map<UserSending>(user)));
-                }
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Error"));
-            } catch(Exception e)
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, _mapper.Map<UserSending>(user)));
+            } catch(BaseException e)
             {
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, e.Message));
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             }
         }
 
@@ -109,18 +87,11 @@ namespace ApiCOS.Controllers
         {
             try
             {
-                if(ModelState.IsValid)
-                {
-                    bool result = await _unitOfWork.User.ValidationUser(email, token);
-                    if(result)
-                        return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Success"));
-                    else
-                        return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Failure"));
-                }
+                await _unitOfWork.User.ValidationUser(email, token);
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Failure, "Failure"));
-            } catch(Exception e)
+            } catch(BaseException e)
             {
-                return BadRequest(e.Message);
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
             }
         }
 

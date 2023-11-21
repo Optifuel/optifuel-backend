@@ -8,5 +8,8 @@ namespace ApiCos.DTOs.CompanyDTO
     {
         public string BusinessName { get; set; } = null!;
         public string Name { get; set; } = null!;
+        public string VatNumber { get; set; } = null!;
+        public Address Address { get; set; } = null!;
+
     }
 }

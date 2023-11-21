@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
-
+using ApiCos.ExceptionApi.User;
 
 namespace ApiCos.Services.Repositories
 {
@@ -18,7 +18,7 @@ namespace ApiCos.Services.Repositories
 
         public async Task<User> Add(User user, string businessName , string password)
         {
-            Company company = await _context.Company.Where(c => c.BusinessName == businessName).FirstOrDefaultAsync();
+            Company? company = await _context.Company.Where(c => c.BusinessName == businessName).FirstOrDefaultAsync();
             if(company == null)
                 throw new Exception("company not found");
 
@@ -46,44 +46,51 @@ namespace ApiCos.Services.Repositories
         }
         
 
-        public async Task<User?> GetByEmail(string email)
+        private async Task<User?> GetByEmail(string email)
         {
-            return await dbSet.Where(u => u.Email == email).FirstOrDefaultAsync();
+            return await dbSet.Where(u => u.Email == email).Include(u => u.Verification).FirstOrDefaultAsync();
         }
 
         public async Task<User?> GetByEmailAndPassword(string email, string password)
         {
-            if(string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-                throw new Exception("null or empty email or password");
-            User user = await dbSet.Where(u => u.Email == email).FirstOrDefaultAsync();
+            if(string.IsNullOrWhiteSpace(email))
+                throw new EmailEmptyException();
+
+            if(string.IsNullOrWhiteSpace(password))
+                throw new PasswordEmptyException();
+
+            User? user = await GetByEmail(email);
+
             if(user == null)
-                throw new Exception("user not found");
+                throw new UserNotFoundException();
+
             if(!ValidatePassword(password, user.PasswordEncrypted.PasswordHash, user.PasswordEncrypted.PasswordSalt))
-                throw new Exception("password is not correct");
+                throw new WrongPasswordException();
+
             if(user.PasswordEncrypted.Validated== false)
-                throw new Exception("Account is not validated");
+                throw new UserNotValidatedException();
 
             return user;
         }
 
-        public async Task<bool> ValidationUser(string email, int token)
+        public async Task ValidationUser(string email, int token)
         {
-            User user = await dbSet.Where(u => u.Email == email).Include(u => u.Verification).FirstOrDefaultAsync();
-            if( user == null )
-                throw new Exception("user not found");
-            if(user.PasswordEncrypted.Validated == true)
-                throw new Exception("user is already validated");
+            User? user = await GetByEmail(email);
 
-            Console.WriteLine($"{user.Verification.Token} TOKEN");
+            if( user == null )
+                throw new UserNotFoundException();
+
+            if(user.PasswordEncrypted.Validated == true)
+                throw new UserAlreadyValidatedException();
+
             if(user.Verification.Token == token)
             {
                 user.PasswordEncrypted.Validated = true;
                 user.Verification = null;
                 _context.SaveChanges();
-                return true;
             }else
             {
-                return false;
+                throw new WrongValidationTokenException();
             }
 
         }
@@ -109,9 +116,11 @@ namespace ApiCos.Services.Repositories
 
         public async Task<User?> EditUser(User user)
         {
-            var userTable = dbSet.Where(u => u.Email == user.Email).FirstOrDefault();
+            var userTable = await GetByEmail(user.Email);
+
             if(userTable == null)
-                throw new Exception("user not found");
+                throw new UserNotFoundException();
+
             userTable.Name = user.Name;
             userTable.Surname = user.Surname;
             userTable.DateBirth = user.DateBirth;

@@ -4,6 +4,7 @@
     {
         IUserRepository User { get; }
         ICompanyRepository Company { get; }
+        IVehicleRepository Vehicle { get; }
         Task CompleteAsync();
     }
 }

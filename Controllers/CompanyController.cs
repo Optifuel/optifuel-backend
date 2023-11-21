@@ -1,5 +1,6 @@
 ﻿using ApiCos.DTOs.CompanyDTO;
 using ApiCos.DTOs.UserDTO;
+using ApiCos.DTOs.VehicleDTO;
 using ApiCos.Models.Entities;
 using ApiCos.Response;
 using ApiCos.Services.IRepositories;
@@ -42,10 +43,41 @@ namespace ApiCos.Controllers
         {
             try
             {
-                List<User>? usersDb = _unitOfWork.Company.GetUsersByBusinessName(businessName).Result;
+                List<User>? usersDb = await _unitOfWork.Company.GetUsersByBusinessName(businessName);
                 List<UserSending>? users = _mapper.Map<List<User>, List<UserSending>>(usersDb);
 
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, users));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
+            }
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/GetVehiclesByBusinessName")]
+        public async Task<ActionResult<ICollection<User>?>> GetVehiclesByBusinessName([FromQuery] string businessName)
+        {
+            try
+            {
+                var vehiclesDb = await _unitOfWork.Company.GetVehiclesByBusinessName(businessName);
+                var vehicles = _mapper.Map<List<Vehicle>, List<VehicleRequest>>(vehiclesDb);
+
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, vehicles));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
+            }
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/GetCompanyVatNumber")]
+        public async Task<ActionResult<Company>> GetByVatNumber([FromQuery] string vatNumber)
+        {
+            try
+            {
+                var company = await _unitOfWork.Company.GetCompanyByVatNumber(vatNumber);
+                var companySending = _mapper.Map<CompanySending>(company);
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success,companySending ));
             } catch(Exception e)
             {
                 return BadRequest(ResponseHandler.GetExceptionResponse(e));

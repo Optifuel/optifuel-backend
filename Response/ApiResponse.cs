@@ -2,7 +2,7 @@
 {
     public class ApiResponse
     {
-        public string Code { get; set; }
+        public int Code { get; set; }
         public string Message { get; set; } = null!;
         public object Data { get; set; } = null!;
     }
@@ -13,4 +13,5 @@
         NotFound,
         Failure
     }
+
 }

@@ -1,13 +1,10 @@
-﻿using ApiCos.Models.Common;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using ApiCos.Models.Entities;
 
-namespace ApiCos.Models.Entities
+namespace ApiCos.DTOs.VehicleDTO
 {
-    [Table("Vehicles")]
-    public class Vehicle : BaseEntity
+    public class VehicleRequest
     {
-        [RegularExpression(@"^[A-Z]{2}[0-9]{3}[A-Z]{2}$", ErrorMessage = "Invalid Format")]
+        public string CompanyName { get; set; } = null!;
         public string LicensePlate { get; set; } = null!;
         public string Brand { get; set; } = null!;
         public string Model { get; set; } = null!;
@@ -19,8 +16,5 @@ namespace ApiCos.Models.Entities
         public float MaxLoad { get; set; }
         public float UrbanConsumption { get; set; }
         public float ExtraUrbanConsumption { get; set; }
-        public int CompanyId { get; set; }
-        public Company Company { get; set; } = null!;
     }
-
 }
