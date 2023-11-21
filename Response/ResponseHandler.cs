@@ -23,22 +23,23 @@
 
         public static ApiResponse GetApiResponse(ResponseType type, object? contract)
         {
-            ApiResponse response = new ApiResponse() {  Data = contract};
+            ApiResponse response;
+            response = new ApiResponse{  Data = contract };
             switch(type)
             {
                 case ResponseType.Success:
                     response.Code = 0;
-                    response.Data = type.ToString();
+                    response.Message = type.ToString();
                 break;
 
                 case ResponseType.Failure:
                     response.Code = 1;
-                    response.Data = type.ToString();
+                    response.Message = type.ToString();
                 break;
 
                 case ResponseType.NotFound:
                     response.Code = 2;
-                    response.Data = type.ToString();
+                    response.Message = type.ToString();
                 break;
             }
             return response;

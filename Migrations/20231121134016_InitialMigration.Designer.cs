@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ApiCos.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20231121105253_DateOnly")]
-    partial class DateOnly
+    [Migration("20231121134016_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
