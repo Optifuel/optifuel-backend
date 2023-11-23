@@ -84,6 +84,14 @@ namespace ApiCos.Services.Repositories
             if(user.PasswordEncrypted.Validated == true)
                 throw new UserAlreadyValidatedException();
 
+            if(user.Verification.DeadLine < DateTime.UtcNow)
+            {
+                user.Verification = null;
+                _context.SaveChanges();
+                throw new TokenExpiredException();
+            }
+
+
             if(user.Verification.Token == token)
             {
                 user.PasswordEncrypted.Validated = true;
