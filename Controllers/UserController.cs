@@ -107,6 +107,40 @@ namespace ApiCOS.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("api/[controller]/ChangePasswordRequest")]
+        public async Task<ActionResult<string>> changePasswordRequest([FromBody] ChangePasswordRequest changePassword)
+        {
+            try
+            {
+                await _unitOfWork.User.ChangePasswordRequest(changePassword.email, changePassword.oldPassword, changePassword.newPassword);
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Success"));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
+            }
+        }
+
+        [HttpPost]
+        [Route("api/[controller]/ChangePassword")]
+        public async Task<ActionResult<string>> changePassword([FromQuery] string email, [FromQuery] int token)
+        {
+            try
+            {
+                await _unitOfWork.User.ChangePassword(email, token);
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Success"));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
+            }
+        }
+
     }
 
 

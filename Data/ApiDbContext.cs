@@ -24,6 +24,7 @@ namespace ApiCos.Data
             modelBuilder.Entity<User>().OwnsOne(e => e.DrivingLicense);
             modelBuilder.Entity<User>().OwnsOne(e => e.PasswordEncrypted);
             modelBuilder.Entity<User>().HasOne(e => e.Verification).WithOne(e => e.User).HasForeignKey<Verification>(e => e.UserId).IsRequired(true);
+            modelBuilder.Entity<User>().HasOne(e => e.ChangePassword).WithOne(e => e.User).HasForeignKey<ChangePassword>(e => e.UserId).IsRequired(true);
 
             modelBuilder.Entity<GasStationPrice>()
                   .HasKey(e => new { e.Id, e.FuelType, e.IsSelf });

@@ -17,6 +17,7 @@ namespace ApiCos.Models.Entities
         public DrivingLicense DrivingLicense { get; set; } = null!;
         public Password PasswordEncrypted { get; set; } = new Password();
         public Verification? Verification { get; set; } = new Verification();
+        public ChangePassword? ChangePassword { get; set; } = new ChangePassword();
        
     }
 }

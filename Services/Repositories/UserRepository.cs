@@ -42,14 +42,14 @@ namespace ApiCos.Services.Repositories
                 User = user,
             };
             await dbSet.AddAsync(user);
-            
-            sendVerificationEmail(user.Email,token );
+            string text = " Per utilizzare tutte le nostre funzionalità inserisci il seguente codice di verifica nell'apposita sezione del sito: \n ";
+            sendVerificationEmail(user.Email,token, text );
             return user;
         }
 
         private async Task<User?> GetByEmail(string email)
         {
-            return await dbSet.Where(u => u.Email == email).Include(u => u.Verification).FirstOrDefaultAsync();
+            return await dbSet.Where(u => u.Email == email).Include(u => u.Verification).Include(u=> u.ChangePassword).FirstOrDefaultAsync();
         }
 
         public async Task<User?> GetByEmailAndPassword(string email, string password)
@@ -140,7 +140,7 @@ namespace ApiCos.Services.Repositories
 
         }
 
-        private void sendVerificationEmail(string mail, int token)
+        private void sendVerificationEmail(string mail, int token, string text)
         {
             string fromMail = "iscosproject@gmail.com";
             string fromPassword = "stmgapzhamxgbbtq";
@@ -150,7 +150,7 @@ namespace ApiCos.Services.Repositories
             message.To.Add(new MailAddress(mail));
             message.Body = "<html><body> " +
                 "Grazie per esserti registrato al nostro sito. \n" +
-                " Per utilizzare tutte le nostre funzionalità inserisci il seguente codice di verifica nell'apposita sezione del sito: \n " + token +
+               text + token +
                 "</body></html>";
             message.IsBodyHtml = true;
 
@@ -168,6 +168,50 @@ namespace ApiCos.Services.Repositories
         {
             Random rand = new Random();
             return rand.Next(100000, 999999);
+        }
+
+        public async Task ChangePasswordRequest(string email, string oldPassword, string newPassword)
+        {
+            User user = GetByEmailAndPassword(email, oldPassword).Result;
+            CreatePasswordHash(newPassword, out var passwordHash, out var passwordSalt);
+
+            user.ChangePassword = new ChangePassword()
+            {
+                Token = generateRandomNumber(),
+                NewPasswordSalt = passwordSalt,
+                NewPasswordHash = passwordHash,
+                DeadLine = DateTime.UtcNow.AddDays(1),
+                UserId = user.Id,
+                User = user,
+            };
+
+            string text = " Per modificare la tua password inserisci il seguente codice nell'apposita sezione del sito: \n ";
+            sendVerificationEmail(user.Email, user.ChangePassword.Token, text);
+            _context.SaveChanges();
+
+
+        }
+
+        public async Task ChangePassword(string email, int token)
+        {
+            User user = await GetByEmail(email);
+            if(user.ChangePassword == null)
+                throw new ChangePasswordRequestNotFoundException();
+
+            if(user.ChangePassword.Token != token)
+                throw new WrongChangePasswordTokenException();
+
+            if(user.ChangePassword.DeadLine < DateTime.UtcNow)
+            {
+                user.ChangePassword = null;
+                _context.SaveChanges();
+                throw new TokenExpiredException();
+            }
+
+            user.PasswordEncrypted.PasswordHash = user.ChangePassword.NewPasswordHash;
+            user.PasswordEncrypted.PasswordSalt = user.ChangePassword.NewPasswordSalt;
+            user.ChangePassword = null;
+            _context.SaveChanges();
         }
     }
 

@@ -9,6 +9,8 @@ namespace ApiCos.Services.IRepositories
 
         Task<User?> EditUser(User user);
         Task ValidationUser(string email, int token);
+        Task ChangePasswordRequest(string email, string oldPassword, string newPassword);
+        Task ChangePassword(string email, int token);
 
     }
 }
