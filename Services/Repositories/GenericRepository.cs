@@ -8,7 +8,6 @@ namespace ApiCos.Services.Repositories
     {
         protected ApiDbContext _context;
         protected DbSet<T> dbSet;
-        private ApiDbContext context;
         protected readonly ILogger _logger;
 
         public GenericRepository(ApiDbContext context, ILogger logger)

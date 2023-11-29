@@ -20,6 +20,7 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 });
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IGasStation, GasStation>();
+builder.Services.AddScoped<IMapBox, MapBox>();
 
 // add cors
 builder.Services.AddCors(options =>
