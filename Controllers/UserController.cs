@@ -7,6 +7,7 @@ using AutoMapper;
 using ApiCos.Response;
 using ApiCos.LoginAuthorization;
 using ApiCos.ExceptionApi;
+using ApiCos.DTOs.VehicleDTO;
 
 namespace ApiCOS.Controllers
 {
@@ -132,6 +133,24 @@ namespace ApiCOS.Controllers
             {
                 await _unitOfWork.User.ChangePassword(email, token);
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Success"));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
+            }
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/GetListVehicleByUser")]
+        public async Task<ActionResult<List<VehicleSending>>> GetListVehicleByUser([FromQuery] string email)
+        {
+            try
+            {
+                List<Vehicle> vehicles = await _unitOfWork.User.GetListVehicleByUser(email);
+                List<VehicleSending> vehiclesSending = _mapper.Map<List<VehicleSending>>(vehicles);
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, vehiclesSending));
             } catch(BaseException e)
             {
                 return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));

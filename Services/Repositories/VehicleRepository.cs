@@ -4,6 +4,7 @@ using ApiCos.Models.Entities;
 using ApiCos.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using ApiCos.ExceptionApi.Vehicle;
+using ApiCos.ExceptionApi.User;
 
 namespace ApiCos.Services.Repositories
 {
@@ -13,14 +14,21 @@ namespace ApiCos.Services.Repositories
         {
         }
 
-        public async Task<Vehicle> Add(Vehicle vehicle, string companyName)
+        public async Task<Vehicle> Add(Vehicle vehicle, string companyName, string email)
         {
             Company? company= _context.Company.Where(c => c.BusinessName == companyName).FirstOrDefault();
+            User? user = await _context.User.Where(u => u.Email == email).FirstOrDefaultAsync();
+
+            if (user == null)
+                throw new UserNotFoundException();
+            
             if(company == null)
                 throw new CompanyNotFoundException();
 
             vehicle.Company = company;
             vehicle.CompanyId = vehicle.Company.Id;
+            vehicle.User = user;
+            vehicle.UserId = vehicle.User.Id;
             await Add(vehicle);
             return vehicle;
         }

@@ -49,7 +49,7 @@ namespace ApiCos.Services.Repositories
 
         private async Task<User?> GetByEmail(string email)
         {
-            return await dbSet.Where(u => u.Email == email).Include(u => u.Verification).Include(u=> u.ChangePassword).FirstOrDefaultAsync();
+            return await dbSet.Where(u => u.Email == email).Include(u => u.Verification).Include(u=> u.ChangePassword).Include(u=> u.Vehicles).FirstOrDefaultAsync();
         }
 
         public async Task<User?> GetByEmailAndPassword(string email, string password)
@@ -138,6 +138,12 @@ namespace ApiCos.Services.Repositories
             await _context.SaveChangesAsync();
             return userTable;
 
+        }
+
+        public async Task<List<Vehicle>> GetListVehicleByUser(string email)
+        {
+            var user = await GetByEmail(email);
+            return user.Vehicles;
         }
 
         private void sendVerificationEmail(string mail, int token, string text)

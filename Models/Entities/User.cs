@@ -18,6 +18,6 @@ namespace ApiCos.Models.Entities
         public Password PasswordEncrypted { get; set; } = new Password();
         public Verification? Verification { get; set; } = new Verification();
         public ChangePassword? ChangePassword { get; set; } = new ChangePassword();
-       
+        public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     }
 }

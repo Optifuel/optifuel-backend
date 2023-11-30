@@ -24,7 +24,7 @@ namespace ApiCos.Controllers
             {
                 ResponseType responseType = ResponseType.Success;
                 Vehicle vehicle = _mapper.Map<Vehicle>(data);
-                await _unitOfWork.Vehicle.Add(vehicle, data.CompanyName);
+                await _unitOfWork.Vehicle.Add(vehicle, data.CompanyName, data.email);
                 await _unitOfWork.CompleteAsync();
 
                 return Ok(ResponseHandler.GetApiResponse(responseType, data));

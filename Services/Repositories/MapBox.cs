@@ -4,6 +4,7 @@ using ApiCos.Services.IRepositories;
 using GeoJSON.Net.Geometry;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 using System.Drawing;
 using System.Globalization;
 using System.Text.Json;
@@ -67,7 +68,7 @@ namespace ApiCos.Services.Repositories
                 throw new Exception("Error al deserializar la respuesta de MapBox");
 
             Models.Entities.Route route = distanceResponse.routes.OrderBy(r => r.distance).FirstOrDefault();
-            await FilterGasStation(route.geometry.coordinates);
+            FilterGasStation(route.geometry.coordinates);
             return route.geometry.coordinates;
         }
 
@@ -83,35 +84,24 @@ namespace ApiCos.Services.Repositories
             int nSections = (int)(distance / minimum);
             if(nSections == 0)
                 return;
-
-
-
         }
 
-        public async Task FilterGasStation(List<List<double>> points)
+        public List<GasStationRegistry> FilterGasStation(List<List<double>> points)
         {
             double radius = 10;
             var stationsInRange = _context.GasStationRegistry.ToList();
-            int numeroDaSaltare = (int)Math.Floor((double)points.Count * 0.10);
-            List<GasStationRegistry> gasStationRegistry = new List<GasStationRegistry>();
+            ConcurrentBag<GasStationRegistry> gasStationRegistry = new ConcurrentBag<GasStationRegistry>();
 
-            for(int i = 0 ; i < points.Count ; i+= numeroDaSaltare)
+            Parallel.ForEach(points, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, (point, state, index) =>
             {
-                if(i < points.Count) 
+                var pointStation = stationsInRange.Where(g => checkPointInRange((Coordinates)point, new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, radius));
+                foreach(var station in pointStation)
                 {
-                    var pointStation = stationsInRange.Where(g => checkPointInRange((Coordinates)points[i], new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, radius))
-                    .ToList();
-                    gasStationRegistry.AddRange(pointStation);
-                }
-                else
-                    break;
-            }
-
-            gasStationRegistry.ForEach(g => Console.WriteLine(g.City));   
-            List<GasStationRegistry> gasStationFilter = gasStationRegistry.GroupBy(obj => obj.Id)
-                                            .Select(group => group.First())
-                                            .ToList();
-            Console.WriteLine(gasStationFilter.Count);
+                    gasStationRegistry.Add(station);
+                } 
+            });
+            
+            return gasStationRegistry.GroupBy(obj => obj.Id).Select(group => group.First()).ToList();
         }
 
         private bool checkPointInRange(Coordinates center, Coordinates point, double radius)

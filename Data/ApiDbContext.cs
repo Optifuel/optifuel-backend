@@ -36,6 +36,7 @@ namespace ApiCos.Data
 
             modelBuilder.Entity<Company>().HasMany(e => e.Vehicles).WithOne(e => e.Company).HasForeignKey(e => e.CompanyId).IsRequired(true);
             modelBuilder.Entity<Company>().HasMany(e => e.Users).WithOne(e => e.Company).HasForeignKey(e => e.CompanyId).IsRequired(true);
+            modelBuilder.Entity<User>().HasMany(e => e.Vehicles).WithOne(e => e.User).HasForeignKey(e => e.UserId).IsRequired(true);
         }
     }
 }

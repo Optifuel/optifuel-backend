@@ -4,7 +4,7 @@ namespace ApiCos.Services.IRepositories
 {
     public interface IVehicleRepository : IGenericRepository<Vehicle>
     {
-        public Task<Vehicle?> Add(Vehicle vehicle, string company);
+        public Task<Vehicle?> Add(Vehicle vehicle, string company, string email);
         public Task<Vehicle?> GetByLicensePlate(string licensePlate);
         public Task<Vehicle?> EditVehicle (Vehicle vehicle, string company);
 
