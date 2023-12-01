@@ -52,5 +52,24 @@ namespace ApiCos.Controllers
                 return BadRequest(ResponseHandler.GetExceptionResponse(e));
             }
         }
+
+        [HttpGet]
+        [Route("api/[controller]/FindGasStation")]
+        public async Task<ActionResult<List<double[]>>> FindGasStation(string licensePlate, string startTown, string endTown)
+        {
+            try
+            {
+                await _mapBox.FindGasStation(licensePlate, startTown, endTown);
+
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Gas station found"));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
+            }
+        }
+
     }
 }
