@@ -1,14 +1,10 @@
 ﻿using ApiCos.Data;
 using ApiCos.Models.Entities;
 using ApiCos.Services.IRepositories;
-using GeoJSON.Net.Geometry;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.IO;
 using System.Collections.Concurrent;
-using System.Drawing;
 using System.Globalization;
-using System.Reflection;
 using System.Text.Json;
 
 namespace ApiCos.Services.Repositories
@@ -87,13 +83,13 @@ namespace ApiCos.Services.Repositories
             double range = consume * tank * 0.15;
             List<GasStationRegistry?> gasStationSelected = new List<GasStationRegistry?>();
 
-            var list = searchStation(route, delete, range, vehicle.FuelType.ToLower() ,gasStationSelected, gasStationFiltedList);
+            var list = await searchStation(route, delete, range, vehicle.FuelType.ToLower() ,gasStationSelected, gasStationFiltedList);
             list.ForEach(g => Console.WriteLine($"città: {g.City}, id: {g.Id}"));
             Console.WriteLine(list.Count);
 
         }
 
-        public List<GasStationRegistry?>? searchStation(Models.Entities.Route route, double delete, double range, string fuelType ,List<GasStationRegistry?>? gasStationSelected, List<GasStationRegistry> gasStationFiltedList)
+        public async Task<List<GasStationRegistry?>>? searchStation(Models.Entities.Route route, double delete, double range, string fuelType ,List<GasStationRegistry?>? gasStationSelected, List<GasStationRegistry> gasStationFiltedList)
         {
             if(route.distance < delete)
             {
@@ -122,13 +118,21 @@ namespace ApiCos.Services.Repositories
             Console.WriteLine(((Coordinates)route.geometry.coordinates.First()).Latitude);
             Console.WriteLine(((Coordinates)route.geometry.coordinates.First()).Longitude);
 
-            gasStationSelected.Add(gasStationFiltedList
-                                                    .Where(g => checkPointInRange((Coordinates)route.geometry.coordinates.First(), new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, range))
+            var listTemp = gasStationFiltedList.Where(g => checkPointInRange((Coordinates)route.geometry.coordinates.First(), new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, range))
                                                     .Where(g => g.GasStationPrices.Any(u => u.FuelType.ToLower() == fuelType))
-                                                    .OrderBy(g => g.GasStationPrices.First(u => u.FuelType.ToLower() == fuelType).Price)
-                                                    .First());
+                                                    .OrderBy(g => g.GasStationPrices.First(u => u.FuelType.ToLower() == fuelType).Price).ToList();
+            double dist = await checkDistance((Coordinates)route.geometry.coordinates.First(), new Coordinates { Latitude = (double)listTemp.First().Latitude, Longitude = (double)listTemp.First().Longitude });
+            while(dist > range)
+            {
+                listTemp.RemoveAt(0);
+                dist = await checkDistance((Coordinates)route.geometry.coordinates.First(), new Coordinates { Latitude = (double)listTemp.First().Latitude, Longitude = (double)listTemp.First().Longitude });
 
-            searchStation(route, delete, range, fuelType, gasStationSelected, gasStationFiltedList);
+            }
+
+            gasStationSelected.Add(listTemp.First());
+
+
+            await Task.Run(() => searchStation(route, delete, range, fuelType, gasStationSelected, gasStationFiltedList));
             return gasStationSelected;
         }
 
@@ -140,13 +144,13 @@ namespace ApiCos.Services.Repositories
 
             Parallel.ForEach(points, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, (point, state, index) =>
             {
-                var pointStation = stationsInRange.Where(g => checkPointInRange(point, new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, radius));
+                var pointStation = stationsInRange.Where(g => checkPointInRange(point, new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, radius)).ToList();
                 foreach(var station in pointStation)
                 {
                     gasStationRegistry.Add(station);
                 } 
             });
-            
+
             return gasStationRegistry.GroupBy(obj => obj.Id).Select(group => group.First()).ToList();
         }
 
@@ -177,6 +181,24 @@ namespace ApiCos.Services.Repositories
                     break;
                 }
             }
+        }
+
+        private async Task<double> checkDistance(Coordinates point1, Coordinates point2)
+        {
+
+            string url = $"{directionsUrl}{point1.Longitude.ToString(CultureInfo.InvariantCulture)},{point1.Latitude.ToString(CultureInfo.InvariantCulture)};{point2.Longitude.ToString(CultureInfo.InvariantCulture)},{point2.Latitude.ToString(CultureInfo.InvariantCulture)}?access_token={accessToken}&alternatives=true&geometries=geojson&language=en&overview=full&steps=true";
+
+            HttpResponseMessage response = await httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            string content = await response.Content.ReadAsStringAsync();
+            DistanceResponse? distanceResponse = JsonSerializer.Deserialize<DistanceResponse>(content);
+
+            if(distanceResponse == null)
+                throw new Exception("Error al deserializar la respuesta de MapBox");
+
+            Models.Entities.Route route = distanceResponse.routes.OrderBy(r => r.distance).FirstOrDefault();
+            return route.distance/1000;
         }
 
 
