@@ -24,7 +24,9 @@ namespace ApiCos.Controllers
             {
                 ResponseType responseType = ResponseType.Success;
                 Vehicle vehicle = _mapper.Map<Vehicle>(data);
-                await _unitOfWork.Vehicle.Add(vehicle, data.CompanyName, data.email);
+                Company company = await _unitOfWork.Company.GetCompanyByBusinessName(data.CompanyName);
+                User user = await _unitOfWork.User.GetByEmail(data.email);
+                await _unitOfWork.Vehicle.Add(vehicle, company, user);
                 await _unitOfWork.CompleteAsync();
 
                 return Ok(ResponseHandler.GetApiResponse(responseType, data));
@@ -46,7 +48,7 @@ namespace ApiCos.Controllers
             {
                 ResponseType responseType = ResponseType.Success;
                 Vehicle? vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
-                VehicleRequest vehicleResponse = _mapper.Map<VehicleRequest>(vehicle);
+                VehicleSending vehicleResponse = _mapper.Map<VehicleSending>(vehicle);
                 return Ok(ResponseHandler.GetApiResponse(responseType, vehicleResponse));
             } catch(BaseException e)
             {

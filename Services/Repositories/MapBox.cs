@@ -2,10 +2,10 @@
 using ApiCos.Models.Entities;
 using ApiCos.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.IO;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.Json;
+using ApiCos.ExceptionApi.MapBox;
 
 namespace ApiCos.Services.Repositories
 {
@@ -63,17 +63,16 @@ namespace ApiCos.Services.Repositories
             DistanceResponse? distanceResponse = JsonSerializer.Deserialize<DistanceResponse>(content);
 
             if(distanceResponse == null)
-                throw new Exception("Error al deserializar la respuesta de MapBox");
+                throw new DeserializarMapBoxException();
 
             Models.Entities.Route route = distanceResponse.routes.OrderBy(r => r.distance).FirstOrDefault();
             return route;
         }
 
-        public async Task FindGasStation(string licensePlate, string startTown, string endTown)
+        public async Task<List<Coordinates>> FindGasStation(Vehicle vehicle, string startTown, string endTown)
         {
             Models.Entities.Route route = await GetPathByTown(startTown, endTown);
             route.distance = route.distance / 1000;
-            Vehicle vehicle = await _context.Vehicle.Where(v => v.LicensePlate == licensePlate).FirstOrDefaultAsync();
             var gasStationFiltedList = FilterGasStation(route.geometry.coordinates.Select(p => (Coordinates)p).ToList());
 
             double consume = vehicle.ExtraUrbanConsumption;
@@ -83,10 +82,8 @@ namespace ApiCos.Services.Repositories
             double range = consume * tank * 0.15;
             List<GasStationRegistry?> gasStationSelected = new List<GasStationRegistry?>();
 
-            var list = await searchStation(route, delete, range, vehicle.FuelType.ToLower() ,gasStationSelected, gasStationFiltedList);
-            list.ForEach(g => Console.WriteLine($"città: {g.City}, id: {g.Id}"));
-            Console.WriteLine(list.Count);
-
+            var list =  await searchStation(route, delete, range, vehicle.FuelType.ToLower() ,gasStationSelected, gasStationFiltedList);
+            return list.Select(g => new Coordinates { Latitude = (double)g.Latitude, Longitude = (double)g.Longitude }).ToList();   
         }
 
         public async Task<List<GasStationRegistry?>>? searchStation(Models.Entities.Route route, double delete, double range, string fuelType ,List<GasStationRegistry?>? gasStationSelected, List<GasStationRegistry> gasStationFiltedList)
@@ -127,6 +124,8 @@ namespace ApiCos.Services.Repositories
                 listTemp.RemoveAt(0);
                 dist = await checkDistance((Coordinates)route.geometry.coordinates.First(), new Coordinates { Latitude = (double)listTemp.First().Latitude, Longitude = (double)listTemp.First().Longitude });
 
+                if(listTemp.Count == 0)
+                    throw new NoGasStationFoundException();
             }
 
             gasStationSelected.Add(listTemp.First());
@@ -195,14 +194,14 @@ namespace ApiCos.Services.Repositories
             DistanceResponse? distanceResponse = JsonSerializer.Deserialize<DistanceResponse>(content);
 
             if(distanceResponse == null)
-                throw new Exception("Error al deserializar la respuesta de MapBox");
+                throw new DeserializarMapBoxException();
 
             Models.Entities.Route route = distanceResponse.routes.OrderBy(r => r.distance).FirstOrDefault();
             return route.distance/1000;
         }
 
 
-        public static double CalculateDistance(Coordinates point1, Coordinates point2)
+        public double CalculateDistance(Coordinates point1, Coordinates point2)
         {
             var dLat = ToRadians(point2.Latitude - point1.Latitude);
             var dLon = ToRadians(point2.Longitude - point1.Longitude);
@@ -218,7 +217,7 @@ namespace ApiCos.Services.Repositories
             return distance;
         }
 
-        private static double ToRadians(double angle)
+        private double ToRadians(double angle)
         {
             return Math.PI * angle / 180.0;
         }

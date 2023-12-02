@@ -58,7 +58,8 @@ namespace ApiCOS.Controllers
         {
             try
             {
-                await _unitOfWork.User.Add(_mapper.Map<User>(user), user.BusinessName, user.Password);
+                Company company = await  _unitOfWork.Company.GetCompanyByBusinessName(user.BusinessName);
+                await _unitOfWork.User.Add(_mapper.Map<User>(user), company, user.Password);
                 await _unitOfWork.CompleteAsync();
 
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, user));   

@@ -14,17 +14,8 @@ namespace ApiCos.Services.Repositories
         {
         }
 
-        public async Task<Vehicle> Add(Vehicle vehicle, string companyName, string email)
+        public async Task<Vehicle> Add(Vehicle vehicle, Company company, User user)
         {
-            Company? company= _context.Company.Where(c => c.BusinessName == companyName).FirstOrDefault();
-            User? user = await _context.User.Where(u => u.Email == email).FirstOrDefaultAsync();
-
-            if (user == null)
-                throw new UserNotFoundException();
-            
-            if(company == null)
-                throw new CompanyNotFoundException();
-
             vehicle.Company = company;
             vehicle.CompanyId = vehicle.Company.Id;
             vehicle.User = user;
@@ -61,7 +52,7 @@ namespace ApiCos.Services.Repositories
         {
             if (string.IsNullOrWhiteSpace(licensePlate))
                 throw new LicensePlateEmptyException();
-            var vehicle = await dbSet.Where(v => v.LicensePlate == licensePlate).Include(v => v.Company).FirstOrDefaultAsync();
+            var vehicle = await dbSet.Where(v => v.LicensePlate == licensePlate).Include(v => v.Company).Include(v=> v.User).FirstOrDefaultAsync();
             if(vehicle == null)
                 throw new VehicleNotFoundException();
             return vehicle;

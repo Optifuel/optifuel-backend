@@ -8,6 +8,7 @@ namespace ApiCos.DTOs.UserDTO
         public DateOnly DateBirth { get; set; }
         public DrivingLicense DrivingLicense { get; set; } = null!;
         public string token { get; set; } = null!;
+        public string BusinessName { get; set; } = null!;
 
     }
 }

@@ -16,7 +16,7 @@ namespace ApiCos.Utils.AutoMapper
         {
             CreateMap<UserRequest, User>();
             CreateMap<PasswordRequest, Password>();
-            CreateMap<User, UserSending>();
+            CreateMap<User, UserSending>().ForMember(dest => dest.BusinessName, opt=> opt.MapFrom(src=> src.Company.BusinessName));
             CreateMap<UserSending, User>();
             CreateMap<UserEdit, User>();
             CreateMap<UserEdit, UserSending>();
@@ -26,7 +26,7 @@ namespace ApiCos.Utils.AutoMapper
             
             CreateMap<VehicleRequest, Vehicle>();
             CreateMap<Vehicle, VehicleRequest>().ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src=> src.Company.BusinessName));
-            CreateMap<Vehicle, VehicleSending>();
+            CreateMap<Vehicle, VehicleSending>().ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src=> src.Company.BusinessName));
 
         }
     }

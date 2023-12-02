@@ -15,5 +15,6 @@ namespace ApiCos.DTOs.VehicleDTO
         public float MaxLoad { get; set; }
         public float UrbanConsumption { get; set; }
         public float ExtraUrbanConsumption { get; set; }
+        public string BusinessName { get; set; } = null!;
     }
 }

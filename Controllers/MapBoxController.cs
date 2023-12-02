@@ -11,10 +11,13 @@ namespace ApiCos.Controllers
     public class MapBoxController : ControllerBase
     {
         private readonly IMapBox _mapBox;
+        protected readonly IUnitOfWork _unitOfWork;
 
-        public MapBoxController(IMapBox mapBox)
+
+        public MapBoxController(IMapBox mapBox, IUnitOfWork unitOfWork)
         {
             _mapBox = mapBox;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -59,9 +62,10 @@ namespace ApiCos.Controllers
         {
             try
             {
-                await _mapBox.FindGasStation(licensePlate, startTown, endTown);
+                Vehicle vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
+                var list = await _mapBox.FindGasStation(vehicle, startTown, endTown);
 
-                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Gas station found"));
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, list));
             } catch(BaseException e)
             {
                 return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
