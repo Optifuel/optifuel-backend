@@ -69,11 +69,12 @@ namespace ApiCos.Services.Repositories
             return route;
         }
 
-        public async Task<List<Coordinates>> FindGasStation(Vehicle vehicle, string startTown, string endTown)
+        public async Task<List<GasStationRegistry>> FindGasStation(Vehicle vehicle, string startTown, string endTown)
         {
             Models.Entities.Route route = await GetPathByTown(startTown, endTown);
             route.distance = route.distance / 1000;
-            var gasStationFiltedList = FilterGasStation(route.geometry.coordinates.Select(p => (Coordinates)p).ToList());
+            var gasStationFiltedList = _context.GasStationRegistry.Include(u => u.GasStationPrices).ToList();
+
 
             double consume = vehicle.ExtraUrbanConsumption;
             double tank = vehicle.LitersTank;
@@ -83,7 +84,7 @@ namespace ApiCos.Services.Repositories
             List<GasStationRegistry?> gasStationSelected = new List<GasStationRegistry?>();
 
             var list =  await searchStation(route, delete, range, vehicle.FuelType.ToLower() ,gasStationSelected, gasStationFiltedList);
-            return list.Select(g => new Coordinates { Latitude = (double)g.Latitude, Longitude = (double)g.Longitude }).ToList();   
+            return list;
         }
 
         public async Task<List<GasStationRegistry?>>? searchStation(Models.Entities.Route route, double delete, double range, string fuelType ,List<GasStationRegistry?>? gasStationSelected, List<GasStationRegistry> gasStationFiltedList)
@@ -141,7 +142,7 @@ namespace ApiCos.Services.Repositories
             var stationsInRange = _context.GasStationRegistry.Include(u=> u.GasStationPrices).ToList();
             ConcurrentBag<GasStationRegistry> gasStationRegistry = new ConcurrentBag<GasStationRegistry>();
 
-            Parallel.ForEach(points, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, (point, state, index) =>
+            Parallel.ForEach(points, new ParallelOptions { MaxDegreeOfParallelism = (Environment.ProcessorCount-2)>0 ?(Environment.ProcessorCount - 2): Environment.ProcessorCount }, (point, state, index) =>
             {
                 var pointStation = stationsInRange.Where(g => checkPointInRange(point, new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, radius)).ToList();
                 foreach(var station in pointStation)
