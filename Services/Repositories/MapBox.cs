@@ -73,7 +73,7 @@ namespace ApiCos.Services.Repositories
         {
             Models.Entities.Route route = await GetPathByTown(startTown, endTown);
             route.distance = route.distance / 1000;
-            var gasStationFiltedList = _context.GasStationRegistry.Include(u => u.GasStationPrices).ToList();
+            var gasStationFiltedList = FilterGasStation(route.geometry.coordinates.Select(p => (Coordinates)p).ToList());
 
 
             double consume = vehicle.ExtraUrbanConsumption;
