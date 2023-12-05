@@ -82,8 +82,9 @@ namespace ApiCos.Services.Repositories
             double delete = consume * tank * 0.75;
             double range = consume * tank * 0.15;
 
-            double deleteFirstIteration =delete * percentTank/100;
-            double rangeFirstIteration = range * percentTank/100;
+
+            double deleteFirstIteration = percentTank < 25 ? 1 :delete * percentTank/100;
+            double rangeFirstIteration = range * percentTank / 100;
             List<GasStationRegistry?> gasStationSelected = new List<GasStationRegistry?>();
 
             var list =  await searchStation(route, delete, range, vehicle.FuelType.ToLower() ,gasStationSelected, gasStationFiltedList, deleteFirstIteration, rangeFirstIteration);
