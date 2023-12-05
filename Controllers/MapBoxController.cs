@@ -59,12 +59,12 @@ namespace ApiCos.Controllers
 
         [HttpGet]
         [Route("api/[controller]/FindGasStation")]
-        public async Task<ActionResult<List<GasStationSending>>> FindGasStation(string licensePlate, string startTown, string endTown)
+        public async Task<ActionResult<List<GasStationSending>>> FindGasStation(string licensePlate, double percentTank, string startTown, string endTown)
         {
             try
             {
                 Vehicle vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
-                var list = await _mapBox.FindGasStation(vehicle, startTown, endTown);
+                var list = await _mapBox.FindGasStation(vehicle, percentTank, startTown, endTown);
 
                 List<GasStationSending> listToSend = new List<GasStationSending>();
                 foreach(var item in list)
