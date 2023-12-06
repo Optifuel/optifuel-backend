@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.Json;
 using ApiCos.ExceptionApi.MapBox;
+using System;
 
 namespace ApiCos.Services.Repositories
 {
@@ -35,7 +36,7 @@ namespace ApiCos.Services.Repositories
 
             string content = await response.Content.ReadAsStringAsync();
             GeoCodingResponse? geoCodingResponse = JsonSerializer.Deserialize<GeoCodingResponse>(content);
-            if (geoCodingResponse == null)
+            if(geoCodingResponse == null)
                 throw new Exception("Error al deserializar la respuesta de MapBox");
 
             Models.Entities.Feature feature = geoCodingResponse.features[0];
@@ -69,7 +70,7 @@ namespace ApiCos.Services.Repositories
             return route;
         }
 
-        public async Task<List<GasStationRegistry>> FindGasStation(Vehicle vehicle, double percentTank ,string startTown, string endTown)
+        public async Task<List<GasStationRegistry>> FindGasStation(Vehicle vehicle, double percentTank, string startTown, string endTown)
         {
             Models.Entities.Route route = await GetPathByTown(startTown, endTown);
             route.distance = route.distance / 1000;
@@ -79,31 +80,30 @@ namespace ApiCos.Services.Repositories
             double consume = vehicle.ExtraUrbanConsumption;
             double tank = vehicle.LitersTank;
 
-            double delete = consume * tank * 0.75;
-            double range = consume * tank * 0.15;
+            double distancePercent = 0.75;
+            double rangePercent = 0.15;
 
-
-            double deleteFirstIteration = percentTank < 25 ? 1 :delete * percentTank/100;
-            double rangeFirstIteration = range * percentTank / 100;
             List<GasStationRegistry?> gasStationSelected = new List<GasStationRegistry?>();
-
-            var list =  await searchStation(route, delete, range, vehicle.FuelType.ToLower() ,gasStationSelected, gasStationFiltedList, deleteFirstIteration, rangeFirstIteration);
+            List<GasStationRegistry?> list = new List<GasStationRegistry?>();
+            try
+            {
+                list = await searchStation(route, tank, consume, percentTank, distancePercent, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList);
+            } catch(InvalidOperationException e) {
+                Console.WriteLine("Errore, via al secondo tentativo");
+                list = await searchStation(route, tank, consume, percentTank, distancePercent - 0.25, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList);
+            }
             return list;
         }
 
-        public async Task<List<GasStationRegistry?>>? searchStation(Models.Entities.Route route, double delete, double range, string fuelType ,List<GasStationRegistry?>? gasStationSelected, List<GasStationRegistry> gasStationFiltedList, double deleteFirstIteration = 0, double rangeFirstIteration=0)
+        public async Task<List<GasStationRegistry?>> searchStation(Models.Entities.Route route, double tank, double consume, double percentTank, double distancePercent, double rangePercent, double defaultDistancePercent, double defaultRangePercent, string fuelType, List<GasStationRegistry?>? gasStationSelected, List<GasStationRegistry> gasStationFiltedList)
         {
+            double delete = percentTank < 25 ? 0 : consume * tank * distancePercent * percentTank / 100;
+            double range = consume * tank * rangePercent * percentTank / 100;
+
+
             if(route.distance < delete)
-            {
                 return new List<GasStationRegistry?>();
-            }
-            double tempDelete = delete;
-            double tempRange = range;
-            if(deleteFirstIteration != 0)
-            {
-                delete = deleteFirstIteration;
-                range = rangeFirstIteration;
-            }
+
 
             route.distance = route.distance - delete;
 
@@ -114,37 +114,43 @@ namespace ApiCos.Services.Repositories
             {
                 double segmentDistance = CalculateDistance(points[i], points[i + 1]);
                 totalDistance += segmentDistance;
-                if(totalDistance >= delete )
+                if(totalDistance >= delete)
                 {
                     indexDelete = i;
                     break;
                 }
             }
-            route.geometry.coordinates.RemoveRange(0, indexDelete);
             Console.WriteLine($"distance: {route.distance}");
             Console.WriteLine($"indexDelete: {indexDelete}");
             Console.WriteLine($"route.geometry.coordinates.Count: {route.geometry.coordinates.Count}");
-            Console.WriteLine(((Coordinates)route.geometry.coordinates.First()).Latitude);
-            Console.WriteLine(((Coordinates)route.geometry.coordinates.First()).Longitude);
+            Console.WriteLine(((Coordinates)route.geometry.coordinates[indexDelete]).Latitude);
+            Console.WriteLine(((Coordinates)route.geometry.coordinates[indexDelete]).Longitude);
 
-            var listTemp = gasStationFiltedList.Where(g => checkPointInRange((Coordinates)route.geometry.coordinates.First(), new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, range))
+            var listTemp = gasStationFiltedList.Where(g => checkPointInRange((Coordinates)route.geometry.coordinates[indexDelete], new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, range))
                                                     .Where(g => g.GasStationPrices.Any(u => u.FuelType.ToLower() == fuelType))
                                                     .OrderBy(g => g.GasStationPrices.First(u => u.FuelType.ToLower() == fuelType).Price).ToList();
-            double dist = await checkDistance((Coordinates)route.geometry.coordinates.First(), new Coordinates { Latitude = (double)listTemp.First().Latitude, Longitude = (double)listTemp.First().Longitude });
+
+            double dist = await checkDistance((Coordinates)route.geometry.coordinates[indexDelete], new Coordinates { Latitude = (double)listTemp.First().Latitude, Longitude = (double)listTemp.First().Longitude });
             while(dist > range)
             {
                 listTemp.RemoveAt(0);
-                dist = await checkDistance((Coordinates)route.geometry.coordinates.First(), new Coordinates { Latitude = (double)listTemp.First().Latitude, Longitude = (double)listTemp.First().Longitude });
+                dist = await checkDistance((Coordinates)route.geometry.coordinates[indexDelete], new Coordinates { Latitude = (double)listTemp.First().Latitude, Longitude = (double)listTemp.First().Longitude });
 
                 if(listTemp.Count == 0)
                     throw new NoGasStationFoundException();
             }
 
+            route.geometry.coordinates.RemoveRange(0, indexDelete);
+            route.geometry.coordinates.Insert(0, new List<double> { (double)listTemp.First().Longitude, (double)listTemp.First().Latitude });
             gasStationSelected.Add(listTemp.First());
-
-            delete = tempDelete;
-            range = tempRange;
-            await Task.Run(() => searchStation(route, delete, range, fuelType, gasStationSelected, gasStationFiltedList));
+            percentTank = 100;
+            try
+            {
+                await Task.Run(() => searchStation(route, tank, consume, percentTank, defaultDistancePercent, defaultRangePercent, defaultDistancePercent, defaultRangePercent, fuelType, gasStationSelected, gasStationFiltedList));
+            } catch(InvalidOperationException e) {
+                Console.WriteLine("Errore, via al secondo tentativo");
+                await Task.Run(() => searchStation(route, tank, consume, percentTank, defaultDistancePercent -0.25, defaultRangePercent, defaultDistancePercent, defaultRangePercent, fuelType, gasStationSelected, gasStationFiltedList));
+            }
             return gasStationSelected;
         }
 
@@ -154,13 +160,13 @@ namespace ApiCos.Services.Repositories
             var stationsInRange = _context.GasStationRegistry.Include(u=> u.GasStationPrices).ToList();
             ConcurrentBag<GasStationRegistry> gasStationRegistry = new ConcurrentBag<GasStationRegistry>();
 
-            Parallel.ForEach(points, new ParallelOptions { MaxDegreeOfParallelism = (Environment.ProcessorCount-2)>0 ?(Environment.ProcessorCount - 2): Environment.ProcessorCount }, (point, state, index) =>
+            Parallel.ForEach(points, new ParallelOptions { MaxDegreeOfParallelism = (Environment.ProcessorCount - 2) > 0 ? (Environment.ProcessorCount - 2) : Environment.ProcessorCount }, (point, state, index) =>
             {
                 var pointStation = stationsInRange.Where(g => checkPointInRange(point, new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, radius)).ToList();
                 foreach(var station in pointStation)
                 {
                     gasStationRegistry.Add(station);
-                } 
+                }
             });
 
             return gasStationRegistry.GroupBy(obj => obj.Id).Select(group => group.First()).ToList();
