@@ -1,6 +1,8 @@
 ﻿using ApiCos.Services.IRepositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using ApiCos.LoginAuthorization;
+
 
 namespace ApiCos.Controllers
 {
@@ -17,6 +19,5 @@ namespace ApiCos.Controllers
             _mapper = mapper;
 
         }
-
     }
 }

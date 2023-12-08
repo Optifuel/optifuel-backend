@@ -24,6 +24,12 @@ namespace ApiCos.Services.Repositories
             return vehicle;
         }
 
+        public async Task Delete(string licensePlate)
+        {
+            Vehicle vehicle = await GetByLicensePlate(licensePlate); 
+            await Delete(vehicle.Id);
+        }
+
         public async Task<Vehicle?> EditVehicle(Vehicle vehicle, string company)
         {
             var vehicleToEdit = await dbSet.Where(v => v.LicensePlate == vehicle.LicensePlate).Include(v => v.Company).FirstOrDefaultAsync();

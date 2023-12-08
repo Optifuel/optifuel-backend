@@ -74,7 +74,7 @@ namespace ApiCos.Services.Repositories
         {
             Models.Entities.Route route = await GetPathByTown(startTown, endTown);
             route.distance = route.distance / 1000;
-            var gasStationFiltedList = FilterGasStation(route.geometry.coordinates.Select(p => (Coordinates)p).ToList());
+            var gasStationFiltedList = _context.GasStationRegistry.Include(u => u.GasStationPrices).ToList(); //FilterGasStation(route.geometry.coordinates.Select(p => (Coordinates)p).ToList());
 
 
             double consume = vehicle.ExtraUrbanConsumption;
@@ -97,36 +97,42 @@ namespace ApiCos.Services.Repositories
 
         public async Task<List<GasStationRegistry?>> searchStation(Models.Entities.Route route, double tank, double consume, double percentTank, double distancePercent, double rangePercent, double defaultDistancePercent, double defaultRangePercent, string fuelType, List<GasStationRegistry?>? gasStationSelected, List<GasStationRegistry> gasStationFiltedList)
         {
+            Console.WriteLine("Codice ricorsivo");
             double delete = percentTank < 25 ? 0 : consume * tank * distancePercent * percentTank / 100;
             double range = consume * tank * rangePercent * percentTank / 100;
 
 
-            if(route.distance < delete)
+            if(route.geometry.coordinates.Count==0)
                 return new List<GasStationRegistry?>();
 
 
-            route.distance = route.distance - delete;
 
             List<Coordinates> points = route.geometry.coordinates.Select(p => (Coordinates)p).ToList();
             int indexDelete = 0;
             double totalDistance = 0;
+            bool indexDeleteFound = false;
             for(int i = 0 ; i < points.Count - 1 ; i++)
             {
                 double segmentDistance = CalculateDistance(points[i], points[i + 1]);
                 totalDistance += segmentDistance;
-                if(totalDistance >= delete)
+                if(totalDistance >= delete && !indexDeleteFound)
                 {
+                    indexDeleteFound = true;
                     indexDelete = i;
-                    break;
                 }
             }
+
+            Console.WriteLine($"totalDistance: {totalDistance}");
+            if(totalDistance < delete)
+                return new List<GasStationRegistry?>();
+
             Console.WriteLine($"distance: {route.distance}");
             Console.WriteLine($"indexDelete: {indexDelete}");
             Console.WriteLine($"route.geometry.coordinates.Count: {route.geometry.coordinates.Count}");
             Console.WriteLine(((Coordinates)route.geometry.coordinates[indexDelete]).Latitude);
             Console.WriteLine(((Coordinates)route.geometry.coordinates[indexDelete]).Longitude);
 
-            var listTemp = gasStationFiltedList.Where(g => checkPointInRange((Coordinates)route.geometry.coordinates[indexDelete], new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, range))
+            var listTemp = gasStationFiltedList.Where(g => checkPointInRange((Coordinates)route.geometry.coordinates[indexDelete], new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, 10))
                                                     .Where(g => g.GasStationPrices.Any(u => u.FuelType.ToLower() == fuelType))
                                                     .OrderBy(g => g.GasStationPrices.First(u => u.FuelType.ToLower() == fuelType).Price).ToList();
 

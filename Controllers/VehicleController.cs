@@ -6,6 +6,7 @@ using ApiCos.Response;
 using ApiCos.Services.IRepositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using ApiCos.LoginAuthorization;
 
 namespace ApiCos.Controllers
 {
@@ -109,6 +110,28 @@ namespace ApiCos.Controllers
                 await _unitOfWork.CompleteAsync();
 
                 return Ok(ResponseHandler.GetApiResponse(responseType, data));
+            } catch(BaseException e)
+            {
+                return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
+            } catch(Exception e)
+            {
+                return BadRequest(ResponseHandler.GetExceptionResponse(e));
+            }
+        }
+
+        [HttpDelete]
+        [Route("api/[controller]/DeleteVehicle")]
+        public async Task<ActionResult<Vehicle>> DeleteVehicle(string email, string token ,[FromQuery] string licensePlate)
+        {
+            try
+            {
+                if(!ApiCos.LoginAuthorization.LoginAuthorization.checkAuthorization(email, token))
+                    return BadRequest(ResponseHandler.GetApiResponse(ResponseType.Failure, "Unauthorized"));
+
+                await _unitOfWork.Vehicle.Delete(licensePlate);
+                await _unitOfWork.CompleteAsync();
+
+                return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, licensePlate));
             } catch(BaseException e)
             {
                 return BadRequest(ResponseHandler.GetApiResponse(e.id, e.description));
