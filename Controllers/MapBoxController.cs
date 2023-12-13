@@ -41,11 +41,11 @@ namespace ApiCos.Controllers
 
         [HttpGet]
         [Route("api/[controller]/GetPathByTown")]
-        public async Task<ActionResult<List<double[]>>> GetPathByTown(string startTown, string endTown)
+        public async Task<ActionResult<List<double[]>>> GetPathByTown(double initLongitude, double initLatitude, double endLongitude, double endLatitude)
         {
             try
             {
-                var result = await _mapBox.GetPathByTown(startTown, endTown);
+                var result = await _mapBox.GetPathByTown(initLongitude, initLatitude, endLongitude, endLatitude);
 
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, result));
             } catch(BaseException e)
@@ -59,12 +59,12 @@ namespace ApiCos.Controllers
 
         [HttpGet]
         [Route("api/[controller]/FindGasStation")]
-        public async Task<ActionResult<List<GasStationSending>>> FindGasStation(string licensePlate, double percentTank, string startTown, string endTown)
+        public async Task<ActionResult<List<GasStationSending>>> FindGasStation(string licensePlate, double percentTank, double initLongitude, double initLatitude, double endLongitude, double endLatitude)
         {
             try
             {
                 Vehicle vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
-                var list = await _mapBox.FindGasStation(vehicle, percentTank, startTown, endTown);
+                var list = await _mapBox.FindGasStation(vehicle, percentTank, initLongitude, initLatitude, endLongitude, endLatitude);
 
                 List<GasStationSending> listToSend = new List<GasStationSending>();
                 foreach(var item in list)

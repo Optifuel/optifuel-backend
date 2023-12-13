@@ -145,6 +145,8 @@ namespace ApiCos.Services
                     {
                         continue;
                     }
+                    if(data.descCarburante.ToLower().Replace(" ", "").Equals("gasolio"))
+                        data.descCarburante = "Diesel";
 
                     table = tableList.Where(x => x.Id.Equals(data.idImpianto) && x.FuelType.Equals(data.descCarburante) && x.IsSelf.Equals(data.isSelf)).FirstOrDefault();
                     if(table != null)
@@ -156,6 +158,8 @@ namespace ApiCos.Services
                     }
                     else
                     {
+                         
+
                         table = new GasStationPrice()
                         {
                             Id = data.idImpianto,
