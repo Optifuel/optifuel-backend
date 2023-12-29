@@ -17,7 +17,7 @@ Now launch Postgres and PgAdmin 4
 
 # DEBUG
 
-Run the project on Visual Studio and go to the following link: http://localhost:5294/index.html
+Run the project on Visual Studio (or execute `dotnet run`) and go to the following link: http://localhost:5294/index.html
 Open this section
 ![image](https://github.com/GabrieleSantangelo/ApiCOS/assets/49369397/8ca7f6c9-a184-4bb5-83ca-1c78dce6c4f2)
 Click on "Try it out" and paste the following text into the text section:
