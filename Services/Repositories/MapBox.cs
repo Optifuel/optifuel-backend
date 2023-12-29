@@ -28,9 +28,7 @@ namespace ApiCos.Services.Repositories
         }
         public async Task<Coordinates> GetCoordinates(string city)
         {
-            Console.WriteLine(city);
             string url = $"{geocodingUrl}{city}.json?access_token={accessToken}";
-            Console.WriteLine(url);
 
             HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
@@ -56,7 +54,6 @@ namespace ApiCos.Services.Repositories
             Coordinates endTownCoordinates = new Coordinates { Longitude = endLongitude, Latitude = endLatitude };
 
             string url = $"{directionsUrl}{startTownCoordinates.Longitude.ToString(CultureInfo.InvariantCulture)},{startTownCoordinates.Latitude.ToString(CultureInfo.InvariantCulture)};{endTownCoordinates.Longitude.ToString(CultureInfo.InvariantCulture)},{endTownCoordinates.Latitude.ToString(CultureInfo.InvariantCulture)}?access_token={accessToken}&alternatives=true&geometries=geojson&language=en&overview=full&steps=true";
-            Console.WriteLine(url);
 
             HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
@@ -68,6 +65,7 @@ namespace ApiCos.Services.Repositories
                 throw new DeserializarMapBoxException();
 
             Models.Entities.Route route = distanceResponse.routes.OrderBy(r => r.distance).FirstOrDefault();
+
             return route;
         }
 
@@ -90,7 +88,6 @@ namespace ApiCos.Services.Repositories
             {
                 list = await searchStation(route, tank, consume, percentTank, distancePercent, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList);
             } catch(InvalidOperationException e) {
-                Console.WriteLine("Errore, via al secondo tentativo");
                 try
                 {
                     list = await searchStation(route, tank, consume, percentTank, distancePercent - 0.25, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList);
@@ -104,7 +101,6 @@ namespace ApiCos.Services.Repositories
 
         public async Task<List<GasStationRegistry?>> searchStation(Models.Entities.Route route, double tank, double consume, double percentTank, double distancePercent, double rangePercent, double defaultDistancePercent, double defaultRangePercent, string fuelType, List<GasStationRegistry?>? gasStationSelected, List<GasStationRegistry> gasStationFiltedList)
         {
-            Console.WriteLine("Codice ricorsivo");
             double delete = percentTank < 25 ? 0 : consume * tank * distancePercent * percentTank / 100;
             double range = consume * tank * rangePercent * percentTank / 100;
 
@@ -129,15 +125,8 @@ namespace ApiCos.Services.Repositories
                 }
             }
 
-            Console.WriteLine($"totalDistance: {totalDistance}");
             if(totalDistance < delete)
                 return new List<GasStationRegistry?>();
-
-            Console.WriteLine($"distance: {route.distance}");
-            Console.WriteLine($"indexDelete: {indexDelete}");
-            Console.WriteLine($"route.geometry.coordinates.Count: {route.geometry.coordinates.Count}");
-            Console.WriteLine(((Coordinates)route.geometry.coordinates[indexDelete]).Latitude);
-            Console.WriteLine(((Coordinates)route.geometry.coordinates[indexDelete]).Longitude);
 
             var listTemp = gasStationFiltedList.Where(g => checkPointInRange((Coordinates)route.geometry.coordinates[indexDelete], new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, 10))
                                                     .Where(g => g.GasStationPrices.Any(u => u.FuelType.ToLower() == fuelType))
@@ -161,7 +150,6 @@ namespace ApiCos.Services.Repositories
             {
                 await Task.Run(() => searchStation(route, tank, consume, percentTank, defaultDistancePercent, defaultRangePercent, defaultDistancePercent, defaultRangePercent, fuelType, gasStationSelected, gasStationFiltedList));
             } catch(InvalidOperationException e) {
-                Console.WriteLine("Errore, via al secondo tentativo");
                 try
                 {
                     await Task.Run(() => searchStation(route, tank, consume, percentTank, defaultDistancePercent - 0.25, defaultRangePercent, defaultDistancePercent, defaultRangePercent, fuelType, gasStationSelected, gasStationFiltedList));

@@ -21,7 +21,7 @@ namespace ApiCOS.Controllers
 
         [HttpGet]
         [Route("api/[controller]/GetUserByEmailAndPassword")]
-        public async Task<ActionResult<UserSending>> GetUserByEmail([FromQuery] string email, [FromQuery] string Password)
+        public async Task<ActionResult<UserSending>> GetUserByEmailAndPassword([FromQuery] string email, [FromQuery] string Password)
         {
             try
             {
