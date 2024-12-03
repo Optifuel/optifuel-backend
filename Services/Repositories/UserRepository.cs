@@ -18,6 +18,9 @@ namespace ApiCos.Services.Repositories
 
         public async Task<User> Add(User user, Company company, string password)
         {
+            var userFound = await GetByEmail(user.Email);
+            if(userFound != null)
+                throw new UserAlreadyExistException();
 
             CreatePasswordHash(password, out var passwordHash, out var passwordSalt);
             user.PasswordEncrypted = new Password
@@ -45,8 +48,6 @@ namespace ApiCos.Services.Repositories
         public async Task<User?> GetByEmail(string email)
         {
             var user = await dbSet.Where(u => u.Email == email).Include(u => u.Verification).Include(u => u.ChangePassword).Include(u => u.Vehicles).Include(u=> u.Company).FirstOrDefaultAsync();
-            if(user == null)
-                throw new UserNotFoundException();
             return user;
         }
 

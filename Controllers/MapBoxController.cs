@@ -57,14 +57,16 @@ namespace ApiCos.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("api/[controller]/FindGasStation")]
-        public async Task<ActionResult<List<GasStationSending>>> FindGasStation(string licensePlate, double percentTank, double initLongitude, double initLatitude, double endLongitude, double endLatitude)
+        //double percentTank, double initLongitude, double initLatitude, double endLongitude, double endLatitude
+        public async Task<ActionResult<List<GasStationSending>>> FindGasStation(string licensePlate, double percentTank, List<Coordinates> listPoints)
         {
+            Console.WriteLine("SONO QUIIIIII");
             try
             {
                 Vehicle vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
-                var list = await _mapBox.FindGasStation(vehicle, percentTank, initLongitude, initLatitude, endLongitude, endLatitude);
+                var list = await _mapBox.FindGasStation(vehicle, percentTank, listPoints);
 
                 List<GasStationSending> listToSend = new List<GasStationSending>();
                 foreach(var item in list)
