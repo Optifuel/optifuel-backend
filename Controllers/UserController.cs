@@ -5,7 +5,7 @@ using Api.DTOs.UserDTO;
 using Api.Controllers;
 using AutoMapper;
 using Api.Response;
-using Api.LoginAuthorization;
+using Auth = Api.LoginAuthorization;
 using Api.ExceptionApi;
 using Api.DTOs.VehicleDTO;
 
@@ -27,7 +27,7 @@ namespace Api.Controllers
             {
                 User? user = await _unitOfWork.User.GetByEmailAndPassword(email, Password);
                 UserSending userSending = _mapper.Map<UserSending>(user);
-                userSending.token = Api.LoginAuthorization.LoginAuthorization.addAuthorization(userSending.Email);
+                userSending.token = Auth.LoginAuthorization.addAuthorization(userSending.Email);
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, userSending));
             } catch(BaseException e)
             {
@@ -42,7 +42,7 @@ namespace Api.Controllers
         [Route("api/[controller]/checkAuthorization")]
         public async Task<ActionResult<string>> checkAuthorization([FromQuery]string email, [FromQuery] string token)
         {
-            if(Api.LoginAuthorization.LoginAuthorization.checkAuthorization(email, token))
+            if(Auth.LoginAuthorization.checkAuthorization(email, token))
             {
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Authorization"));
             }

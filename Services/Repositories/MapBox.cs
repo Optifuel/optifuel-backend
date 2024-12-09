@@ -35,6 +35,7 @@ namespace Api.Services.Repositories
 
             string content = await response.Content.ReadAsStringAsync();
             GeoCodingResponse? geoCodingResponse = JsonSerializer.Deserialize<GeoCodingResponse>(content);
+            
             if(geoCodingResponse == null)
                 throw new Exception("Error al deserializar la respuesta de MapBox");
 
@@ -96,12 +97,12 @@ namespace Api.Services.Repositories
                 try
                 {
                     list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
-                } catch(InvalidOperationException e)
+                } catch(InvalidOperationException)
                 {
                     try
                     {
                         list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent - 0.25, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
-                    } catch(InvalidOperationException e2)
+                    } catch(InvalidOperationException)
                     {
                         throw new NoGasStationFoundException();
                     }
@@ -163,11 +164,11 @@ namespace Api.Services.Repositories
             try
             {
                 await Task.Run(() => searchStation(route, tank, consume, percentTank, defaultDistancePercent, defaultRangePercent, defaultDistancePercent, defaultRangePercent, fuelType, gasStationSelected, gasStationFiltedList));
-            } catch(InvalidOperationException e) {
+            } catch(InvalidOperationException) {
                 try
                 {
                     await Task.Run(() => searchStation(route, tank, consume, percentTank, defaultDistancePercent - 0.25, defaultRangePercent, defaultDistancePercent, defaultRangePercent, fuelType, gasStationSelected, gasStationFiltedList));
-                } catch(InvalidOperationException e2)
+                } catch(InvalidOperationException)
                 {
                     throw new NoGasStationFoundException();
                 }
