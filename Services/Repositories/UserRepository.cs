@@ -147,11 +147,12 @@ namespace ApiCos.Services.Repositories
 
         private void sendVerificationEmail(string mail, int token, string text)
         {
-            string fromMail = "iscosproject@gmail.com";
-            string fromPassword = "stmgapzhamxgbbtq";
+            string fromMail = "optifueldp@gmail.com";
+            string fromPassword = "wwgonwqktgrvlulh";
 
             MailMessage message = new MailMessage();
             message.From = new MailAddress(fromMail);
+            message.Subject = "Conferma Registrazione";
             message.To.Add(new MailAddress(mail));
             message.Body = "<html><body> " +
                 "Grazie per esserti registrato al nostro sito. \n" +
