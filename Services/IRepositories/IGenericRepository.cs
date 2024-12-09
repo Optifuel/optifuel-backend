@@ -1,4 +1,4 @@
-﻿namespace ApiCos.Services.IRepositories
+﻿namespace Api.Services.IRepositories
 {
     public interface IGenericRepository<T> where T : class
     {

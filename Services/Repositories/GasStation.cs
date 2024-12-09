@@ -1,17 +1,17 @@
-﻿using ApiCos.Data;
-using ApiCos.Services.Repositories;
+﻿using Api.Data;
+using Api.Services.Repositories;
 using CsvHelper.Configuration;
 using CsvHelper;
 using System.Globalization;
-using ApiCos.Models.Entities;
-using ApiCos.DTOs.GasStationDTO;
-using ApiCos.Services.IRepositories;
+using Api.Models.Entities;
+using Api.DTOs.GasStationDTO;
+using Api.Services.IRepositories;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Immutable;
 
-namespace ApiCos.Services
+namespace Api.Services
 {
     public class GasStation : IGasStation
     {

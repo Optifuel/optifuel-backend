@@ -1,7 +1,7 @@
-﻿using ApiCos.Models.Common;
+﻿using Api.Models.Common;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ApiCos.Models.Entities
+namespace Api.Models.Entities
 {
     [Table("GasStationRegistries")]
     public class GasStationRegistry : BaseEntity

@@ -1,7 +1,7 @@
-﻿using ApiCos.Models.Entities;
+﻿using Api.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace ApiCos.Data
+namespace Api.Data
 {
     public class ApiDbContext : DbContext
     {

@@ -1,7 +1,7 @@
-﻿using ApiCos.Models.Common;
-using ApiCos.Models.Entities;
+﻿using Api.Models.Common;
+using Api.Models.Entities;
 
-namespace ApiCos.DTOs.UserDTO
+namespace Api.DTOs.UserDTO
 {
     public class UserSending: UserBase
     {

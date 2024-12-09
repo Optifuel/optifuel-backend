@@ -1,14 +1,14 @@
-﻿using ApiCos.DTOs.Common;
-using ApiCos.DTOs.CompanyDTO;
-using ApiCos.DTOs.GasStationDTO;
-using ApiCos.DTOs.UserDTO;
-using ApiCos.DTOs.VehicleDTO;
-using ApiCos.Models.Common;
-using ApiCos.Models.Entities;
+﻿using Api.DTOs.Common;
+using Api.DTOs.CompanyDTO;
+using Api.DTOs.GasStationDTO;
+using Api.DTOs.UserDTO;
+using Api.DTOs.VehicleDTO;
+using Api.Models.Common;
+using Api.Models.Entities;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-namespace ApiCos.Utils.AutoMapper
+namespace Api.Utils.AutoMapper
 {
     public class AutoMapperProfile : Profile
     {

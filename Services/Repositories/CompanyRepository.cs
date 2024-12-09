@@ -1,11 +1,11 @@
-﻿using ApiCos.Data;
-using ApiCos.ExceptionApi.Company;
-using ApiCos.Models.Entities;
-using ApiCos.Services.IRepositories;
+﻿using Api.Data;
+using Api.ExceptionApi.Company;
+using Api.Models.Entities;
+using Api.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace ApiCos.Services.Repositories
+namespace Api.Services.Repositories
 {
     public class CompanyRepository : GenericRepository<Company>, ICompanyRepository
     {

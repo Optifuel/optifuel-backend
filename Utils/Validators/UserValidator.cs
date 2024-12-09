@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
-using ApiCos.DTOs.UserDTO;
-using ApiCos.Models.Common;
+using Api.DTOs.UserDTO;
+using Api.Models.Common;
 
-namespace ApiCos.Utils.Validators
+namespace Api.Utils.Validators
 {
     public class UserValidator : AbstractValidator<UserRequest>
     {

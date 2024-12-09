@@ -1,10 +1,10 @@
-﻿using ApiCos.Response;
-using ApiCos.Services;
-using ApiCos.Services.IRepositories;
+﻿using Api.Response;
+using Api.Services;
+using Api.Services.IRepositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiCos.Controllers
+namespace Api.Controllers
 {
     [ApiController]
     public class GasStationController : GenericController<GasStationController>

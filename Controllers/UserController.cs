@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ApiCos.Models.Entities;
-using ApiCos.Services.IRepositories;
-using ApiCos.DTOs.UserDTO;
-using ApiCos.Controllers;
+using Api.Models.Entities;
+using Api.Services.IRepositories;
+using Api.DTOs.UserDTO;
+using Api.Controllers;
 using AutoMapper;
-using ApiCos.Response;
-using ApiCos.LoginAuthorization;
-using ApiCos.ExceptionApi;
-using ApiCos.DTOs.VehicleDTO;
+using Api.Response;
+using Api.LoginAuthorization;
+using Api.ExceptionApi;
+using Api.DTOs.VehicleDTO;
 
-namespace ApiCOS.Controllers
+namespace Api.Controllers
 {
 
     [ApiController]
@@ -27,7 +27,7 @@ namespace ApiCOS.Controllers
             {
                 User? user = await _unitOfWork.User.GetByEmailAndPassword(email, Password);
                 UserSending userSending = _mapper.Map<UserSending>(user);
-                userSending.token = LoginAuthorization.addAuthorization(userSending.Email);
+                userSending.token = Api.LoginAuthorization.LoginAuthorization.addAuthorization(userSending.Email);
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, userSending));
             } catch(BaseException e)
             {
@@ -42,7 +42,7 @@ namespace ApiCOS.Controllers
         [Route("api/[controller]/checkAuthorization")]
         public async Task<ActionResult<string>> checkAuthorization([FromQuery]string email, [FromQuery] string token)
         {
-            if(LoginAuthorization.checkAuthorization(email, token))
+            if(Api.LoginAuthorization.LoginAuthorization.checkAuthorization(email, token))
             {
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, "Authorization"));
             }

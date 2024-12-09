@@ -1,7 +1,7 @@
-using ApiCos.Data;
-using ApiCos.Services;
-using ApiCos.Services.IRepositories;
-using ApiCos.Services.Repositories;
+using Api.Data;
+using Api.Services;
+using Api.Services.IRepositories;
+using Api.Services.Repositories;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -39,7 +39,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "apiCOS", Version = "v1" });
+    c.SwaggerDoc("v1", new() { Title = "Api", Version = "v1" });
 });
 
 
@@ -55,7 +55,7 @@ if(app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "apiCOS v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api v1");
         c.RoutePrefix = string.Empty;
     });
 }

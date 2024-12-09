@@ -1,4 +1,4 @@
-﻿namespace ApiCos.ExceptionApi.Vehicle
+﻿namespace Api.ExceptionApi.Vehicle
 {
     public class VehicleNotFoundException : BaseException
     {

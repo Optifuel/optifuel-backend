@@ -1,4 +1,4 @@
-﻿namespace ApiCos.ExceptionApi.MapBox
+﻿namespace Api.ExceptionApi.MapBox
 {
     public class NotEnoughPointsException : BaseException
     {

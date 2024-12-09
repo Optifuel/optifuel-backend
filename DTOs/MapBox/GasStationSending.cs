@@ -1,6 +1,6 @@
-﻿using ApiCos.Models.Entities;   
+﻿using Api.Models.Entities;   
 
-namespace ApiCos.DTOs.MapBox
+namespace Api.DTOs.MapBox
 {
     public class GasStationSending
     {

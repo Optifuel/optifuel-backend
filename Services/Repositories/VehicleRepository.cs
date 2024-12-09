@@ -1,12 +1,12 @@
-﻿using ApiCos.Data;
-using ApiCos.ExceptionApi.Company;
-using ApiCos.Models.Entities;
-using ApiCos.Services.IRepositories;
+﻿using Api.Data;
+using Api.ExceptionApi.Company;
+using Api.Models.Entities;
+using Api.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using ApiCos.ExceptionApi.Vehicle;
-using ApiCos.ExceptionApi.User;
+using Api.ExceptionApi.Vehicle;
+using Api.ExceptionApi.User;
 
-namespace ApiCos.Services.Repositories
+namespace Api.Services.Repositories
 {
     public class VehicleRepository : GenericRepository<Vehicle>, IVehicleRepository
     {

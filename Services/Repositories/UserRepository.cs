@@ -1,14 +1,14 @@
-﻿using ApiCos.Data;
-using ApiCos.Models.Common;
-using ApiCos.Models.Entities;
-using ApiCos.Services.IRepositories;
+﻿using Api.Data;
+using Api.Models.Common;
+using Api.Models.Entities;
+using Api.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
-using ApiCos.ExceptionApi.User;
+using Api.ExceptionApi.User;
 
-namespace ApiCos.Services.Repositories
+namespace Api.Services.Repositories
 {
     public class UserRepository : GenericRepository<User>, IUserRepository
     {

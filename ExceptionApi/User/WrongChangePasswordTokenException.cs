@@ -1,4 +1,4 @@
-﻿namespace ApiCos.ExceptionApi.User
+﻿namespace Api.ExceptionApi.User
 {
     public class WrongChangePasswordTokenException : BaseException
     {

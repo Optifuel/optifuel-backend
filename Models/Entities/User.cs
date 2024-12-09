@@ -1,8 +1,8 @@
 ﻿using DataAnnotationsExtensions;
 using System.ComponentModel.DataAnnotations.Schema;
-using ApiCos.Models.Common;
+using Api.Models.Common;
 
-namespace ApiCos.Models.Entities
+namespace Api.Models.Entities
 {
     [Table("Users")]
     public class User : BaseEntity

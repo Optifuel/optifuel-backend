@@ -1,15 +1,15 @@
-﻿using ApiCos.Data;
-using ApiCos.Models.Entities;
-using ApiCos.Services.IRepositories;
+﻿using Api.Data;
+using Api.Models.Entities;
+using Api.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.Json;
-using ApiCos.ExceptionApi.MapBox;
+using Api.ExceptionApi.MapBox;
 using System;
 using System.Collections.Generic;
 
-namespace ApiCos.Services.Repositories
+namespace Api.Services.Repositories
 {
     public class MapBox : IMapBox
     {

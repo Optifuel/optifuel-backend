@@ -1,10 +1,10 @@
-﻿using ApiCos.Services.IRepositories;
+﻿using Api.Services.IRepositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using ApiCos.LoginAuthorization;
+using Api.LoginAuthorization;
 
 
-namespace ApiCos.Controllers
+namespace Api.Controllers
 {
     public abstract class GenericController<T>: ControllerBase where T : class 
     {

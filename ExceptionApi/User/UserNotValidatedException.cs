@@ -1,6 +1,6 @@
-﻿using ApiCos.ExceptionApi;
+﻿using Api.ExceptionApi;
 
-namespace ApiCos.ExceptionApi.User
+namespace Api.ExceptionApi.User
 {
     public class UserNotValidatedException : BaseException
     {

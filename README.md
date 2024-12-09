@@ -1,4 +1,4 @@
-# ApiCos
+# Api
 Install [PgAdmin 4](https://www.pgadmin.org/download/) and [postgres SQL](https://www.postgresql.org/download/)
 
 Install [.net Core and SDK 7.0 ](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)

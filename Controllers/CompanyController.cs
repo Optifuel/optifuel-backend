@@ -1,14 +1,14 @@
-﻿using ApiCos.DTOs.CompanyDTO;
-using ApiCos.DTOs.UserDTO;
-using ApiCos.DTOs.VehicleDTO;
-using ApiCos.ExceptionApi;
-using ApiCos.Models.Entities;
-using ApiCos.Response;
-using ApiCos.Services.IRepositories;
+﻿using Api.DTOs.CompanyDTO;
+using Api.DTOs.UserDTO;
+using Api.DTOs.VehicleDTO;
+using Api.ExceptionApi;
+using Api.Models.Entities;
+using Api.Response;
+using Api.Services.IRepositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiCos.Controllers
+namespace Api.Controllers
 {
     public class CompanyController : GenericController<CompanyController>
     {

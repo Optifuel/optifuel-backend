@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 
-namespace ApiCos.DTOs.GasStationDTO
+namespace Api.DTOs.GasStationDTO
 {
     public class GasStationRegistryRequest
     {

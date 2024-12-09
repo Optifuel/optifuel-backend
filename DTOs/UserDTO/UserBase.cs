@@ -1,4 +1,4 @@
-﻿namespace ApiCos.DTOs.UserDTO
+﻿namespace Api.DTOs.UserDTO
 {
     public abstract class UserBase
     {

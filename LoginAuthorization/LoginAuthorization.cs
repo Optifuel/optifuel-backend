@@ -1,4 +1,4 @@
-﻿namespace ApiCos.LoginAuthorization
+﻿namespace Api.LoginAuthorization
 {
     public static class LoginAuthorization
     {

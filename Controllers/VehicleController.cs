@@ -1,14 +1,14 @@
-﻿using ApiCos.DTOs.UserDTO;
-using ApiCos.DTOs.VehicleDTO;
-using ApiCos.ExceptionApi;
-using ApiCos.Models.Entities;
-using ApiCos.Response;
-using ApiCos.Services.IRepositories;
+﻿using Api.DTOs.UserDTO;
+using Api.DTOs.VehicleDTO;
+using Api.ExceptionApi;
+using Api.Models.Entities;
+using Api.Response;
+using Api.Services.IRepositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using ApiCos.LoginAuthorization;
+using Api.LoginAuthorization;
 
-namespace ApiCos.Controllers
+namespace Api.Controllers
 {
     [ApiController]
     public class VehicleController : GenericController<VehicleController>
@@ -125,7 +125,7 @@ namespace ApiCos.Controllers
         {
             try
             {
-                if(!ApiCos.LoginAuthorization.LoginAuthorization.checkAuthorization(email, token))
+                if(!Api.LoginAuthorization.LoginAuthorization.checkAuthorization(email, token))
                     return BadRequest(ResponseHandler.GetApiResponse(ResponseType.Failure, "Unauthorized"));
 
                 await _unitOfWork.Vehicle.Delete(licensePlate);

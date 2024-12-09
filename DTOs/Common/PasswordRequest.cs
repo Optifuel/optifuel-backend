@@ -1,4 +1,4 @@
-﻿namespace ApiCos.DTOs.Common
+﻿namespace Api.DTOs.Common
 {
     public class PasswordRequest
     {

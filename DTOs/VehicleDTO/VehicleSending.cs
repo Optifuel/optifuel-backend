@@ -1,6 +1,6 @@
-﻿using ApiCos.Models.Entities;
+﻿using Api.Models.Entities;
 
-namespace ApiCos.DTOs.VehicleDTO
+namespace Api.DTOs.VehicleDTO
 {
     public class VehicleSending
     {

@@ -1,7 +1,7 @@
-﻿using ApiCos.Services.IRepositories;
-using ApiCos.Data;
+﻿using Api.Services.IRepositories;
+using Api.Data;
 
-namespace ApiCos.Services.Repositories
+namespace Api.Services.Repositories
 {
     public class UnitOfWork : IUnitOfWork, IDisposable
     {

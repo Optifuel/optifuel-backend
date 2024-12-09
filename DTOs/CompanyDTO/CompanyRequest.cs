@@ -1,8 +1,8 @@
-﻿using ApiCos.Models.Common;
-using ApiCos.Models.Entities;
+﻿using Api.Models.Common;
+using Api.Models.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace ApiCos.DTOs.CompanyDTO
+namespace Api.DTOs.CompanyDTO
 {
     public class CompanyRequest
     {

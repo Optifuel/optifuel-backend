@@ -1,6 +1,6 @@
-﻿using ApiCos.Models.Entities;
+﻿using Api.Models.Entities;
 
-namespace ApiCos.Services.IRepositories
+namespace Api.Services.IRepositories
 {
     public interface ICompanyRepository : IGenericRepository<Company>
     {

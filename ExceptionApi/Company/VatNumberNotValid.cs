@@ -1,4 +1,4 @@
-﻿namespace ApiCos.ExceptionApi.Company
+﻿namespace Api.ExceptionApi.Company
 {
     public class VatNumberNotValid : BaseException
     {

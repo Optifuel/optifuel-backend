@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ApiCos.Models.Entities
+namespace Api.Models.Entities
 {
     public class Verification
     {

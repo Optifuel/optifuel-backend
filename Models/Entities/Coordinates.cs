@@ -1,4 +1,4 @@
-﻿namespace ApiCos.Models.Entities
+﻿namespace Api.Models.Entities
 {
     public class Coordinates
     {

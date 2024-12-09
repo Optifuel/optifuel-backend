@@ -1,4 +1,4 @@
-﻿namespace ApiCos.Services
+﻿namespace Api.Services
 {
     public interface IGasStation 
     {

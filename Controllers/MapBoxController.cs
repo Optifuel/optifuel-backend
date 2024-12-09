@@ -1,12 +1,12 @@
-﻿using ApiCos.ExceptionApi;
-using ApiCos.Models.Entities;
-using ApiCos.Response;
-using ApiCos.Services.IRepositories;
+﻿using Api.ExceptionApi;
+using Api.Models.Entities;
+using Api.Response;
+using Api.Services.IRepositories;
 using Microsoft.AspNetCore.Mvc;
-using ApiCos.DTOs.MapBox;
+using Api.DTOs.MapBox;
 
 
-namespace ApiCos.Controllers
+namespace Api.Controllers
 {
     [ApiController]
     public class MapBoxController : ControllerBase

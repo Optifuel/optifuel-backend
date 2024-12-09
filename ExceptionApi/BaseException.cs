@@ -1,4 +1,4 @@
-﻿namespace ApiCos.ExceptionApi
+﻿namespace Api.ExceptionApi
 {
     [Serializable]
     public class BaseException : Exception

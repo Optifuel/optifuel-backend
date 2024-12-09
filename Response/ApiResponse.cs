@@ -1,4 +1,4 @@
-﻿namespace ApiCos.Response
+﻿namespace Api.Response
 {
     public class ApiResponse
     {

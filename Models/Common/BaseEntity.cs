@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace ApiCos.Models.Common
+namespace Api.Models.Common
 {
     public abstract class BaseEntity
     {

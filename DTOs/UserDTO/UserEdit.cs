@@ -1,6 +1,6 @@
-﻿using ApiCos.Models.Common;
+﻿using Api.Models.Common;
 
-namespace ApiCos.DTOs.UserDTO
+namespace Api.DTOs.UserDTO
 {
     public class UserEdit : UserBase
     {

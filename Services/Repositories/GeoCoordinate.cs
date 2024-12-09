@@ -1,4 +1,4 @@
-﻿namespace ApiCos.Services.Repositories
+﻿namespace Api.Services.Repositories
 {
     internal class GeoCoordinate
     {

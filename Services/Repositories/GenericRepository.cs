@@ -1,8 +1,8 @@
-﻿using ApiCos.Data;
-using ApiCos.Services.IRepositories;
+﻿using Api.Data;
+using Api.Services.IRepositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace ApiCos.Services.Repositories
+namespace Api.Services.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {

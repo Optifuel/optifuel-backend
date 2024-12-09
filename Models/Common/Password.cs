@@ -1,4 +1,4 @@
-﻿namespace ApiCos.Models.Common
+﻿namespace Api.Models.Common
 {
     public class Password
     {
