@@ -68,7 +68,23 @@ namespace Api.Services.Repositories
                 throw new WrongPasswordException();
 
             if(user.PasswordEncrypted.Validated== false)
+            {
+                int token = generateRandomNumber();
+
+                user.Verification = new Verification()
+                {
+                    Token = token,
+                    DeadLine = DateTime.UtcNow.AddDays(1),
+                    UserId= user.Id,
+                    User = user,
+                };
+                _context.SaveChanges();
+                string text = " Per utilizzare tutte le nostre funzionalità inserisci il seguente codice di verifica nell'apposita sezione del sito: \n ";
+                sendVerificationEmail(user.Email,token, text );
                 throw new UserNotValidatedException();
+
+            }
+                
 
             return user;
         }
