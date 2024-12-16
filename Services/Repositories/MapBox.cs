@@ -30,6 +30,8 @@ namespace Api.Services.Repositories
         {
             string url = $"{geocodingUrl}{city}.json?access_token={accessToken}";
 
+            https://api.mapbox.com/search/searchbox/v1/retrieve/dXJuOm1ieHBvaToxYTk3ZWYzNy00MjhkLTQ2ZWMtYWZjZi1kZDNiZWE5ZjlmYTE?access_token
+
             HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
@@ -49,7 +51,7 @@ namespace Api.Services.Repositories
             return coordinates;
         }
 
-        public async Task<Models.Entities.Route> GetPathByTown(double initLongitude, double initLatitude, double endLongitude, double endLatitude)
+        private async Task<Models.Entities.Route> GetPathByTown(double initLongitude, double initLatitude, double endLongitude, double endLatitude)
         {
             Coordinates startTownCoordinates = new Coordinates { Longitude = initLongitude, Latitude = initLatitude };
             Coordinates endTownCoordinates = new Coordinates { Longitude = endLongitude, Latitude = endLatitude };
@@ -74,6 +76,8 @@ namespace Api.Services.Repositories
         {
             if(listPoints.Count < 2)
                 throw new NotEnoughPointsException();
+            
+
 
             List<GasStationRegistry?> list = new List<GasStationRegistry?>();
             double consume = vehicle.ExtraUrbanConsumption;
@@ -81,6 +85,9 @@ namespace Api.Services.Repositories
 
             double distancePercent = 0.75;
             double rangePercent = 0.15;
+
+            if (await checkDistance(listPoints.First(), listPoints.Last()) < vehicle.LitersTank * vehicle.ExtraUrbanConsumption*distancePercent)
+                return list;
 
             for (int i =1 ; i < listPoints.Count ; i++)
             {
