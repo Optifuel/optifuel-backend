@@ -51,7 +51,7 @@ namespace Api.Services.Repositories
             return coordinates;
         }
 
-        private async Task<Models.Entities.Route> GetPathByTown(double initLongitude, double initLatitude, double endLongitude, double endLatitude)
+        public async Task<Models.Entities.Route> GetPathByTown(double initLongitude, double initLatitude, double endLongitude, double endLatitude)
         {
             Coordinates startTownCoordinates = new Coordinates { Longitude = initLongitude, Latitude = initLatitude };
             Coordinates endTownCoordinates = new Coordinates { Longitude = endLongitude, Latitude = endLatitude };
