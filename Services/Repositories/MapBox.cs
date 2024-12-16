@@ -72,6 +72,41 @@ namespace Api.Services.Repositories
             return route;
         }
 
+
+
+        public async Task<Models.Entities.Route> GetPathMultiplePoint(List<Coordinates> listPoints)
+        {
+            if (listPoints == null || listPoints.Count < 2)
+            {
+                throw new NotEnoughPointsException();
+            }
+
+            // Costruisci la stringa delle coordinate concatenando i punti
+            string coordinatesString = string.Join(
+                ";",
+                listPoints.Select(point => $"{point.Longitude.ToString(CultureInfo.InvariantCulture)},{point.Latitude.ToString(CultureInfo.InvariantCulture)}")
+            );
+
+            // Componi l'URL dinamico
+            string url = $"{directionsUrl}{coordinatesString}?access_token={accessToken}&alternatives=true&geometries=geojson&language=en&overview=full&steps=true";
+
+            HttpResponseMessage response = await httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            string content = await response.Content.ReadAsStringAsync();
+            DistanceResponse? distanceResponse = JsonSerializer.Deserialize<DistanceResponse>(content);
+
+            if (distanceResponse == null)
+            {
+                throw new DeserializarMapBoxException();
+            }
+
+            Models.Entities.Route route = distanceResponse.routes.OrderBy(r => r.distance).FirstOrDefault();
+
+            return route;
+        }
+
+
         public async Task<List<GasStationRegistry>> FindGasStation(Vehicle vehicle, double percentTank, List<Coordinates> listPoints)
         {
             if(listPoints.Count < 2)
@@ -86,20 +121,19 @@ namespace Api.Services.Repositories
             double distancePercent = 0.75;
             double rangePercent = 0.15;
 
-            
+            Models.Entities.Route route = await GetPathMultiplePoint(listPoints);
+            List<GasStationRegistry?> gasStationSelected = new List<GasStationRegistry?>();
 
-            for (int i =1 ; i < listPoints.Count ; i++)
-            {
-                List<GasStationRegistry?> gasStationSelected = new List<GasStationRegistry?>();
-                double initLongitude = listPoints[i - 1].Longitude;
-                double initLatitude = listPoints[i - 1].Latitude;
-                double endLongitude = listPoints[i].Longitude;
-                double endLatitude = listPoints[i].Latitude;
+            Console.WriteLine(route.distance);
+            if(route.distance/1000 < tank * consume * percentTank / 100)
+                throw new NotEnoughDistanceException();
+        
 
 
-                Models.Entities.Route route = await GetPathByTown(initLongitude, initLatitude, endLongitude, endLatitude);
                 route.distance = route.distance / 1000;
                 var gasStationFiltedList = _context.GasStationRegistry.Include(u => u.GasStationPrices).ToList(); //FilterGasStation(route.geometry.coordinates.Select(p => (Coordinates)p).ToList());
+                
+
                 try
                 {
                     list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
@@ -110,20 +144,15 @@ namespace Api.Services.Repositories
                         list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent - 0.25, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
                     } catch(InvalidOperationException)
                     {
-                        Console.WriteLine($"Trovato nada fra {i-1} e {i}");
                         throw new NoGasStationFoundException();
                     }
                 }
 
                 if (!list.Any())
                 {
-                    Console.WriteLine($"Nessuna stazione trovata tra {listPoints[i - 1]} e {listPoints[i]}");
                     throw new NoGasStationFoundException();
                 }
-                Coordinates station = new Coordinates { Latitude = (double)list.Last().Latitude, Longitude = (double)list.Last().Longitude };
-                var dist = await  checkDistance(station, listPoints[i]);
-                percentTank = (tank - (dist/consume))/tank  * 100;
-            }
+            
             return list;
         }
 
