@@ -86,8 +86,7 @@ namespace Api.Services.Repositories
             double distancePercent = 0.75;
             double rangePercent = 0.15;
 
-            if (await checkDistance(listPoints.First(), listPoints.Last()) < vehicle.LitersTank * vehicle.ExtraUrbanConsumption*distancePercent)
-                return list;
+            
 
             for (int i =1 ; i < listPoints.Count ; i++)
             {
@@ -111,12 +110,19 @@ namespace Api.Services.Repositories
                         list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent - 0.25, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
                     } catch(InvalidOperationException)
                     {
+                        Console.WriteLine($"Trovato nada fra {i-1} e {i}");
                         throw new NoGasStationFoundException();
                     }
                 }
+
+                if (!list.Any())
+                {
+                    Console.WriteLine($"Nessuna stazione trovata tra {listPoints[i - 1]} e {listPoints[i]}");
+                    throw new NoGasStationFoundException();
+                }
                 Coordinates station = new Coordinates { Latitude = (double)list.Last().Latitude, Longitude = (double)list.Last().Longitude };
                 var dist = await  checkDistance(station, listPoints[i]);
-                percentTank = (  (tank - (dist/consume))/tank ) * 100;
+                percentTank = (tank - (dist/consume))/tank  * 100;
             }
             return list;
         }

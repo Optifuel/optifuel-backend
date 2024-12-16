@@ -60,9 +60,8 @@ namespace Api.Controllers
         [HttpPost]
         [Route("api/[controller]/FindGasStation")]
         //double percentTank, double initLongitude, double initLatitude, double endLongitude, double endLatitude
-        public async Task<ActionResult<List<GasStationSending>>> FindGasStation(string licensePlate, double percentTank, List<Coordinates> listPoints)
+        public async Task<ActionResult<List<GasStationSending>>> FindGasStation([FromQuery] string licensePlate,[FromQuery] double percentTank,[FromBody] List<Coordinates> listPoints)
         {
-            Console.WriteLine("SONO QUIIIIII");
             try
             {
                 Vehicle vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
