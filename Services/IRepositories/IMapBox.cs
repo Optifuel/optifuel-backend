@@ -6,6 +6,6 @@ namespace Api.Services.IRepositories
     {
         public Task<Coordinates> GetCoordinates(string city);
         public Task<Models.Entities.Route> GetPathByTown(double initLongitude, double initLatitude, double endLongitude, double endLatitude);
-        public Task<List<GasStationRegistry>> FindGasStation(Vehicle vehicle, double percentTank, List<Coordinates> listPoints);
+        public Task<(List<GasStationRegistry>, List<Coordinates>)> FindGasStation(Vehicle vehicle, double percentTank, List<Coordinates> listPoints);
     }
 }

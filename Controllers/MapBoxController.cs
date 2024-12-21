@@ -60,17 +60,17 @@ namespace Api.Controllers
         [HttpPost]
         [Route("api/[controller]/FindGasStation")]
         //double percentTank, double initLongitude, double initLatitude, double endLongitude, double endLatitude
-        public async Task<ActionResult<List<GasStationSending>>> FindGasStation([FromQuery] string licensePlate,[FromQuery] double percentTank,[FromBody] List<Coordinates> listPoints)
+        public async Task<ActionResult<FindGasStationSending>> FindGasStation([FromQuery] string licensePlate,[FromQuery] double percentTank,[FromBody] List<Coordinates> listPoints)
         {
             try
             {
                 Vehicle vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
-                var list = await _mapBox.FindGasStation(vehicle, percentTank, listPoints);
+                var (list, waypoint) = await _mapBox.FindGasStation(vehicle, percentTank, listPoints);
 
-                List<GasStationSending> listToSend = new List<GasStationSending>();
+                List<GasStationSending> temp = new List<GasStationSending>();
                 foreach(var item in list)
                 {
-                    listToSend.Add(new GasStationSending
+                    temp.Add(new GasStationSending
                     {
                         name = item.GasStationName,
                         coordinates = new Coordinates
@@ -84,6 +84,12 @@ namespace Api.Controllers
                     });
                     ;
                 }
+
+                FindGasStationSending listToSend = new FindGasStationSending
+                {
+                    Station = temp,
+                    coordinates = waypoint
+                };
 
                 return Ok(ResponseHandler.GetApiResponse(ResponseType.Success, listToSend));
             } catch(BaseException e)

@@ -13,5 +13,20 @@
                 Longitude = v[0]
             };
         }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Coordinates other)
+            {
+                return this.Latitude == other.Latitude && this.Longitude == other.Longitude;
+            }
+            return false;
+        }
+
+        // Sovrascrive GetHashCode per supportare l'uso in dizionari e hash set
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Latitude, Longitude);
+        }
     }
 }
