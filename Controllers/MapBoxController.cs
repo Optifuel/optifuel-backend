@@ -1,4 +1,5 @@
-﻿using Api.ExceptionApi;
+﻿using System;
+using Api.ExceptionApi;
 using Api.Models.Entities;
 using Api.Response;
 using Api.Services.IRepositories;
@@ -66,6 +67,9 @@ namespace Api.Controllers
             {
                 Vehicle vehicle = await _unitOfWork.Vehicle.GetByLicensePlate(licensePlate);
                 var (list, waypoint) = await _mapBox.FindGasStation(vehicle, percentTank, listPoints);
+                Console.WriteLine("[DEBUG CONTROLLER] list "+ list.Count);
+                Console.WriteLine("[DEBUG CONTROLLER] waypoint "+ waypoint.Count);
+
 
                 List<GasStationSending> temp = new List<GasStationSending>();
                 foreach(var item in list)
@@ -78,7 +82,7 @@ namespace Api.Controllers
                             Latitude = (double)item.Latitude,
                             Longitude = (double)item.Longitude
                         },
-                        price = item.GasStationPrices.Where(x => x.FuelType == vehicle.FuelType).FirstOrDefault().Price,
+                        price = item.GasStationPrices.FirstOrDefault().Price,
                         type = vehicle.FuelType,
                         address = item.Address
                     });

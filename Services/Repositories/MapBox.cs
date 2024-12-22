@@ -26,6 +26,20 @@ namespace Api.Services.Repositories
             httpClient = new HttpClient();
             _context = context;
         }
+
+
+        private Dictionary<string, List<string>> fuelMapping = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "benzina", new List<string> { "benzina", "verde speciale", "benzina shell v power", "verde", "benzina 102 ottani", "benzina speciale 98 ottani", "benzina speciale", "benzina 100 ottani", "benzina energy 98 ottani", "benzina wr 100" } },
+            { "diesel", new List<string> { "diesel", "gasolio" ,"diesel hvo", "supreme diesel", "dieselmax", "gasolio hvo", "gasolio oro diesel", "hvolution", "gasolio prestazionale", "gasolio artico", "v-power diesel", "blu diesel alpino", "gasolio artico", "hi-q diesel", "gasolio alpino", "gasolio plus", "diesel hvo energy", "gasolio energy d", "hvo eco diesel", "e-diesel", "gasolio gelo", "gasolio ecoplus", "gasolio speciale", "hvo100", "blue diesel", "hvovolution", "excellium diesel", "gasolio bio hvo", "gasolio premium", "rehvo", "diesel shell v power", } },
+            { "gpl", new List<string> { "gpl", "gnl" } },
+            { "metano", new List<string> { "metano" } }
+        };
+        private bool MatchesFuelType(string dbFuelType, string searchFuelType)
+        {
+            return fuelMapping.TryGetValue(searchFuelType, out var variants) && variants.Contains(dbFuelType.ToLower());
+        }
+
         public async Task<Coordinates> GetCoordinates(string city)
         {
             string url = $"{geocodingUrl}{city}.json?access_token={accessToken}";
@@ -108,8 +122,6 @@ namespace Api.Services.Repositories
         {
             if(listPoints.Count < 2)
                 throw new NotEnoughPointsException();
-            
-
 
             List<GasStationRegistry?> list = new List<GasStationRegistry?>();
             double consume = vehicle.ExtraUrbanConsumption;
@@ -117,6 +129,9 @@ namespace Api.Services.Repositories
 
             double distancePercent = 0.75;
             double rangePercent = 0.15;
+            Models.Entities.Route tempRoute = await GetPathMultiplePoint(listPoints);
+            if(tempRoute.distance/1000 < tank * consume * percentTank / 100)
+                throw new NotEnoughDistanceException();
 
             List<Coordinates> ordered_points = new List<Coordinates>();
 
@@ -135,42 +150,67 @@ namespace Api.Services.Repositories
 
                 Models.Entities.Route route = await GetPathByTown(initLongitude, initLatitude, endLongitude, endLatitude);
                 route.distance = route.distance / 1000;
-                var gasStationFiltedList = _context.GasStationRegistry.Include(u => u.GasStationPrices).ToList(); //FilterGasStation(route.geometry.coordinates.Select(p => (Coordinates)p).ToList());
-                try
-                {
-                    list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
-                } catch(InvalidOperationException)
-                {
+                if( route.distance > tank * consume * percentTank / 100){
+                    var gasStationFiltedList = _context.GasStationRegistry.Include(u => u.GasStationPrices).ToList(); //FilterGasStation(route.geometry.coordinates.Select(p => (Coordinates)p).ToList());
                     try
                     {
-                        list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent - 0.25, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
+                        list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
                     } catch(InvalidOperationException)
                     {
-                        Console.WriteLine($"Trovato nada fra {i-1} e {i}");
+                        try
+                        {
+                            list.AddRange(await searchStation(route, tank, consume, percentTank, distancePercent - 0.25, rangePercent, distancePercent, rangePercent, vehicle.FuelType.ToLower(), gasStationSelected, gasStationFiltedList));
+                        } catch(InvalidOperationException)
+                        {
+                            throw new NoGasStationFoundException();
+                        }
+                    }
+
+                    if (!list.Any())
+                    {
+                        Console.WriteLine($"Nessuna stazione trovata tra {i - 1} e {i}");
                         throw new NoGasStationFoundException();
                     }
+
+                    ordered_points.AddRange(gasStationSelected.Select(g => new Coordinates 
+                    { 
+                        Latitude = (double)g?.Latitude, 
+                        Longitude = (double)g?.Longitude 
+                    }));
+                    Coordinates station = new Coordinates { Latitude = (double)list.Last().Latitude, Longitude = (double)list.Last().Longitude };
+
+                    var dist = await  checkDistance(station, listPoints[i]);
+                    percentTank = (tank - (dist/consume))/tank  * 100;
+                }else{
+                    percentTank = percentTank -((route.distance/consume)/tank * 100);
+                    Console.WriteLine($"[DEBUG] percentTank fra {i-1} e {i} " + percentTank);
                 }
 
-                if (!list.Any())
-                {
-                    Console.WriteLine($"Nessuna stazione trovata tra {listPoints[i - 1]} e {listPoints[i]}");
-                    throw new NoGasStationFoundException();
-                }
-
-                ordered_points.AddRange(gasStationSelected.Select(g => new Coordinates 
-                { 
-                    Latitude = (double)g?.Latitude, 
-                    Longitude = (double)g?.Longitude 
-                }));
-                Coordinates station = new Coordinates { Latitude = (double)list.Last().Latitude, Longitude = (double)list.Last().Longitude };
-
-                var dist = await  checkDistance(station, listPoints[i]);
-                percentTank = (tank - (dist/consume))/tank  * 100;
             }
-
             ordered_points.Add(listPoints.Last());
+            list = FilterByFuelTypeAndBestPrice(list, vehicle.FuelType.ToLower());
             return (list, ordered_points);
         }   
+
+
+        private List<GasStationRegistry> FilterByFuelTypeAndBestPrice(List<GasStationRegistry> gasStationList, string fuelType)
+        {
+            foreach (var station in gasStationList)
+            {
+                // Filtra i prezzi per il carburante di interesse
+                var filteredPrices = station.GasStationPrices
+                    .Where(price => MatchesFuelType(price.FuelType, fuelType))
+                    .OrderBy(price => price.Price) // Ordina per prezzo crescente
+                    .Take(1) // Prendi solo il prezzo migliore
+                    .ToList();
+
+                // Sostituisci la lista originale con quella filtrata
+                station.GasStationPrices = filteredPrices;
+            }
+
+            // Rimuovi le stazioni senza prezzi validi
+            return gasStationList.Where(station => station.GasStationPrices.Any()).ToList();
+        }
 
         public async Task<List<GasStationRegistry?>> searchStation(
             Models.Entities.Route route, 
@@ -213,9 +253,16 @@ namespace Api.Services.Repositories
             if(totalDistance < delete)
                 return new List<GasStationRegistry?>();
 
-            var listTemp = gasStationFiltedList.Where(g => checkPointInRange((Coordinates)route.geometry.coordinates[indexDelete], new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, 10))
-                                                    .Where(g => g.GasStationPrices.Any(u => u.FuelType.ToLower() == fuelType))
-                                                    .OrderBy(g => g.GasStationPrices.First(u => u.FuelType.ToLower() == fuelType).Price).ToList();
+            var listTemp = gasStationFiltedList
+            .Where(g => checkPointInRange(
+                (Coordinates)route.geometry.coordinates[indexDelete],
+                new Coordinates { Longitude = (double)g.Longitude, Latitude = (double)g.Latitude }, 
+                10))
+            .Where(g => g.GasStationPrices.Any(u => MatchesFuelType(u.FuelType, fuelType)))
+            .OrderBy(g => g.GasStationPrices.First(u => MatchesFuelType(u.FuelType, fuelType)).Price)
+            .ToList();
+
+            Console.WriteLine("[DEBUG] List Temp " + listTemp.Count );
 
             double dist = await checkDistance((Coordinates)route.geometry.coordinates[indexDelete], new Coordinates { Latitude = (double)listTemp.First().Latitude, Longitude = (double)listTemp.First().Longitude });
             while(dist > range)
@@ -243,6 +290,7 @@ namespace Api.Services.Repositories
                     throw new NoGasStationFoundException();
                 }
             }
+            Console.WriteLine("[DEBUG] gasStationSelected " + gasStationSelected.Count);
             return gasStationSelected;
         }
 
