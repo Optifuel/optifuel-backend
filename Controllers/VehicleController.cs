@@ -25,7 +25,7 @@ namespace Api.Controllers
             {
                 ResponseType responseType = ResponseType.Success;
                 Vehicle vehicle = _mapper.Map<Vehicle>(data);
-                Company company = await _unitOfWork.Company.GetCompanyByBusinessName(data.CompanyName);
+                Company company = await _unitOfWork.Company.GetCompanyByBusinessName(data.BusinessName);
                 User user = await _unitOfWork.User.GetByEmail(data.email);
                 await _unitOfWork.Vehicle.Add(vehicle, company, user);
                 await _unitOfWork.CompleteAsync();
@@ -106,7 +106,7 @@ namespace Api.Controllers
             {
                 ResponseType responseType = ResponseType.Success;
                 Vehicle vehicle = _mapper.Map<Vehicle>(data);
-                await _unitOfWork.Vehicle.EditVehicle(vehicle, data.CompanyName);
+                await _unitOfWork.Vehicle.EditVehicle(vehicle, data.BusinessName);
                 await _unitOfWork.CompleteAsync();
 
                 return Ok(ResponseHandler.GetApiResponse(responseType, data));

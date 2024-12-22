@@ -25,8 +25,8 @@ namespace Api.Utils.AutoMapper
             CreateMap<Company, CompanySending>();
             
             CreateMap<VehicleRequest, Vehicle>();
-            CreateMap<Vehicle, VehicleRequest>().ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src=> src.Company.BusinessName));
-            CreateMap<Vehicle, VehicleSending>().ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src=> src.Company.BusinessName));
+            CreateMap<Vehicle, VehicleRequest>().ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src=> src.Company.BusinessName));
+            CreateMap<Vehicle, VehicleSending>().ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src=> src.Company.BusinessName));
 
         }
     }

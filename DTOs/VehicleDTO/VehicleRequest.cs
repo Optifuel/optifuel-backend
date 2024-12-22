@@ -4,7 +4,7 @@ namespace Api.DTOs.VehicleDTO
 {
     public class VehicleRequest
     {
-        public string CompanyName { get; set; } = null!;
+        public string BusinessName { get; set; } = null!;
         public string LicensePlate { get; set; } = null!;
         public string Brand { get; set; } = null!;
         public string Model { get; set; } = null!;
